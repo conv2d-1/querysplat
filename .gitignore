@@ -1,0 +1,56 @@
+# Local environments and caches
+.cache/
+.envs/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Experiment outputs and logs
+results/
+logs/
+wandb/
+output/
+work_dirs/
+debug/
+tmp/
+*.log
+events.*
+
+# Model checkpoints and generated artifacts
+**/checkpoint/
+**/checkpoints/
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.pkl
+*.npz
+*.npy
+*.ply
+*.rrd
+
+# Generated media and archives
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.mov
+*.avi
+*.tar
+*.tar.gz
+*.zip
+
+# Local/editor files
+.env
+.DS_Store
+.vscode/
+.idea/
+
+# TMA is an independent nested Git repository; keep it out of this superproject.
+TMA/

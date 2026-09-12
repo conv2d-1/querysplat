@@ -1,0 +1,102 @@
+datasets:
+- batch_size: 1
+  pipeline:
+    clip_maxlen: 24
+    clip_sampler:
+      seed: null
+      shuffle: false
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num:
+      - 4
+      - 4
+    clip_step: null
+    data_path: /mnt/cfsdata/Team/AI/datasets/TMD/Hasim_benchmark/Running/mf_tracking.json
+    data_root: /mnt/cfsdata/Team/AI/datasets/TMD
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1.0
+    interpolate_k: 0
+    interpolate_version: null
+    max_depth: 20.0
+    mf_scene_sampling_strategy: first:1
+    mf_to_mv: true
+    min_depth: 0.001
+    name: hasim_benchmark_running
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_cameras: true
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    novel_view_nums: 0
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    sem_name: ''
+    size_pool: null
+    skip_static_threshold: 0.02
+    sky_index: -1
+    sparse_depth_ratio: 0
+    sparse_pattern: null
+    sparse_pattern_v2: null
+    sparse_pattern_v3: null
+    static_traj_ratio: 1.0
+    test_transforms:
+    - backup: true
+      is_lidar: false
+      low_resolution: true
+      max_size: 280
+      patch_size: 14
+      type: hAlgorithm.datasets.transforms.transforms.ResizeKeepRatio
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - backup: true
+      is_lidar: false
+      low_resolution: true
+      max_size: 280
+      patch_size: 14
+      type: hAlgorithm.datasets.transforms.transforms.ResizeKeepRatio
+    - distortion_prob: 0.3
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets_4d.hasim_track_dataset.HaSimTrackDataset
+    with_depth_edge_mask: true
+    with_edge_mask: false
+    with_global_scale: true
+    with_inf_mask: false
+    with_pointmap: true
+    with_pointmap_raw: true
+    with_rgb_edge_mask: true
+  prob: 0.1

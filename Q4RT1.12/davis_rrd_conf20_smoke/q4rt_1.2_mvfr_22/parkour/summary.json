@@ -1,0 +1,23 @@
+{
+  "sequence": "parkour",
+  "num_frames": 2,
+  "rgb_dir": "/mnt/cfsdata/Team/AI/personal/chentiancheng/workspace/AnyCameraMOS/Datasets/DAVIS16-M/DAVIS/JPEGImages/480p/parkour",
+  "mask_dir": "/mnt/cfsdata/Team/AI/personal/chentiancheng/workspace/AnyCameraMOS/Datasets/DAVIS16-M/DAVIS/Annotations/480p/parkour",
+  "ref_rgb": "/mnt/cfsdata/Team/AI/personal/chentiancheng/workspace/AnyCameraMOS/Datasets/DAVIS16-M/DAVIS/JPEGImages/480p/parkour/00000.jpg",
+  "ref_mask": "/mnt/cfsdata/Team/AI/personal/chentiancheng/workspace/AnyCameraMOS/Datasets/DAVIS16-M/DAVIS/Annotations/480p/parkour/00000.png",
+  "static_mode": "per_frame_nn_outside_frame_t_mask",
+  "dynamic_mode": "ref0_mask_pair_0t",
+  "orig_fg_pixels": 6659,
+  "static_grid_queries": 8820,
+  "dynamic_queries": 6659,
+  "static_downsample": 4,
+  "dynamic_downsample": 1,
+  "conf_drop_ratio": 0.2,
+  "dynamic_queries_after_conf_filter": 5328,
+  "per_frame_static_counts": [
+    6948,
+    6931
+  ],
+  "pred_cameras": 0,
+  "rrd": "/mnt/cfsdata/Team/AI/personal/chentiancheng/workspace/Projects/TMA/results/Q4RT1.12/davis_rrd_conf20_smoke/q4rt_1.2_mvfr_22/parkour/rerun_vis/vis_accum_static_parkour_conf20.rrd"
+}
