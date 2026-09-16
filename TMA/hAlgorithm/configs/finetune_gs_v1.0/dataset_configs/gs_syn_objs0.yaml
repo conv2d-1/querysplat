@@ -1,0 +1,57 @@
+datasets_train:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/benchmark_hasim.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: train
+
+
+datasets_val:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/benchmark_hasim.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: val
+
+datasets_vis:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/benchmark_hasim.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: val

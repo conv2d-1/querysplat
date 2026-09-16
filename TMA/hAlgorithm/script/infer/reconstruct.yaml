@@ -1,0 +1,20 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Davinci/train_mf.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    
+    type: hAlgorithm.datasets.lidar_depth_dataset.LidarDepthDataset
+    mf_to_sf: true
+    mf_scene: "20240830_112911"
+    mf_frame_id: 4
+    mf_view_ids: [1, 2, 3]
+    

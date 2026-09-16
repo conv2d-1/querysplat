@@ -1,0 +1,1129 @@
+datasets:
+- data_path: /mnt/personal/TMD/datasets/Hypersim/data_split_marigold_v2/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/Hypersim/data_split_marigold_v2/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: hypersim
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.hypersim_dataset.HypersimDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/BlendedMVS/indoor_train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/BlendedMVS/indoor_train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: blendedmvs
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: true
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.blendedmvs_dataset.BlendedMVSDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/KenBurns/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 100.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/KenBurns/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 100.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: kenburns
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.kenburns_dataset.KenBurnsDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/DIML/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1000.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/DIML/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1000.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: diml
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.diml_dataset.DIMLDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/Taskonomy/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 512.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/Taskonomy/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 512.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: taskonomy
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.taskonomy_dataset.TaskonomyDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/DIODE/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/DIODE/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: diode
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.diode_dataset.DIODEDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/DynamicStereo/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/DynamicStereo/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: dynamicstereo
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: false
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.dynamicstereo_dataset.DynamicStereoDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true
+- data_path: /mnt/personal/TMD/datasets/ScanNet/train.json
+  data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  depth_scale: 1000.0
+  interpolate_k: 1
+  max_depth: 1000.0
+  min_depth: 0.001
+  only_pointmap: true
+  pipeline:
+    data_path: /mnt/personal/TMD/datasets/ScanNet/train.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    debug: false
+    depth_invalid_sem_names: null
+    depth_scale: 1000.0
+    interpolate_k: 1
+    max_depth: 1000.0
+    min_depth: 0.001
+    name: scannet
+    normal_transform:
+      type: hAlgorithm.datasets.transforms.norm_transforms.DepthToNormal
+    normalize_depth:
+      clip: true
+      min_max_quantile: 0.02
+      norm_max: 1.0
+      norm_min: -1.0
+      type: hAlgorithm.datasets.transforms.depth_transforms.ScaleShiftDepthNormalizer
+    only_pointmap: true
+    phase: train
+    point_normalize_mode: distance
+    recalculate_normal: true
+    sampling_strategy: all
+    seed: 0
+    size_pool:
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 476
+      - 630
+    - - 406
+      - 532
+    - - 434
+      - 574
+    - - 462
+      - 602
+    - - 490
+      - 644
+    - - 518
+      - 672
+    - - 546
+      - 714
+    - - 574
+      - 756
+    - - 602
+      - 784
+    - - 630
+      - 826
+    - - 406
+      - 504
+    - - 420
+      - 462
+    - - 434
+      - 574
+    - - 448
+      - 532
+    - - 462
+      - 560
+    - - 476
+      - 672
+    - - 490
+      - 686
+    - - 504
+      - 546
+    - - 518
+      - 672
+    - - 532
+      - 602
+    - - 546
+      - 812
+    - - 560
+      - 728
+    - - 574
+      - 770
+    - - 588
+      - 826
+    - - 602
+      - 742
+    - - 616
+      - 672
+    - - 630
+      - 980
+    sky_index: -1
+    sparse_depth_ratio: 0.05
+    test_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    train_transforms:
+    - height: 476
+      type: hAlgorithm.datasets.transforms.transforms.Resize
+      width: 630
+    - prob: 0.5
+      type: hAlgorithm.datasets.transforms.transforms.RandomHorizontalFlip
+    - distortion_prob: 0.05
+      to_gray_prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.PhotoMetricDistortion
+    - prob: 0.05
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RandomBlur
+    - compression:
+      - 0
+      - 50
+      prob: 0.1
+      type: hAlgorithm.datasets.transforms.metric3d_transforms.RGBCompresion
+    - type: hAlgorithm.datasets.transforms.transforms.ToTensor
+    - mean:
+      - 127.5
+      - 127.5
+      - 127.5
+      std:
+      - 127.5
+      - 127.5
+      - 127.5
+      type: hAlgorithm.datasets.transforms.transforms.Normalize
+    type: hAlgorithm.datasets.scannet_dataset.ScanNetDataset
+    with_edge_mask: false
+    with_pointmap: true
+  point_normalize_mode: distance
+  sampling_strategy: all
+  sparse_depth_ratio: 0.05
+  with_pointmap: true

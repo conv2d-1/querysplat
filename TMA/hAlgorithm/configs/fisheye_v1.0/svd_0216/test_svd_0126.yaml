@@ -1,0 +1,39 @@
+datasets:
+  # 室内，目标，仿真
+  # name hablendeder_fisheye_objs
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_260120/hasim_hablender_fisheye_v2_0126_h5.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_fisheye_objs
+    sampling_strategy: "first:20"
+    mf_scene_sampling_strategy: "end:5"
+    fisheye_crop_pixel_normal: 5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_fisheye.base_dataset_mv.BaseDatasetFisheyeMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: normal_svd
+    normal_hdf5: normal_svd_hdf5
+    camera_type: "FISHEYE_EQUIDISTANT"
+    # normal_name: none
+    mask_name: none
+    sem_name: none
+
+    mf_to_sf: false

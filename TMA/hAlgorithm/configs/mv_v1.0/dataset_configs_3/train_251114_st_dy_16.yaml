@@ -1,0 +1,706 @@
+datasets:
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 768
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3629
+  # mf_data_scene_frames max 100, min 6, mean 97, median 100   
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+
+  # 室内，场景，MVS
+  # name scannet                           
+  # mf_data_scene 2500
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 21208
+  # mf_data_scene_frames max 8260, min 6, mean 957, median 767
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train_mf_split.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 8.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scannet
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 120
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+  
+  # 室内，场景，MVS
+  # name scpp
+  # mf_data_scene 897
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 93463
+  # mf_data_scene_frames max 4705, min 104, mean 833, median 753
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_train_mf_arkit_render.json,
+      /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_test_mf_arkit_render.json
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scpp
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 6
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+    
+    depth_name: render_depth
+    rbg_name: rgb
+  
+  # 室内，场景，仿真
+  # name megasynth
+  # mf_data_scene 618
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 23720
+  # mf_data_scene_frames max 48, min 16, mean 38, median 43
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MegaSynth/train_mf_reposed.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: megasynth
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.pose_rank_dataset.PoseRankDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+  
+  # 室内，场景，仿真
+  # name ase
+  # mf_data_scene 2473
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 162390
+  # mf_data_scene_frames max 2278, min 3, mean 524, median 423
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ASE/train_mf_0604_mask.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: ase
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.ase_dataset.ASEDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+  
+  # 室内，场景，仿真
+  # name infinigen
+  # mf_data_scene 3502
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 25521
+  # mf_data_scene_frames max 301, min 51, mean 139, median 116
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/random_traj_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/random_traj_noise_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v1_random_traj_20250529_part0.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250529.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v1_random_traj_20250529_part1.json,
+
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part1.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part2.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part3.json,
+
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part1.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part2.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part3.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+  
+  # 室内，场景，仿真
+  # name infinigen_iphone
+  # mf_data_scene 1596
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 11859
+  # mf_data_scene_frames max 301, min 51, mean 142, median 119
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/iphone_v1_total/20250804_095259_scene_001258.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons/iphone_v2/scenes_v2_iphone_seed_0_scene456_20251030_024522.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen_iphone
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+  # 室内，场景，MVS
+  # name hm3d
+  # mf_data_scene 898
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 2180097
+  # mf_data_scene_frames max 500, min 500, mean 500, median 500
+  # mf_data_scene_views max 5, min 5, mean 5, median 5
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaHabitat/HM3D/hm3d_val_hdf5.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaHabitat/HM3D/hm3d_train_hdf5.json
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hm3d
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.pose_rank_dataset.PoseRankDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+    rank_lambda_t: 10.0
+    rank_t_normalize: true
+  
+  # 室内，目标，仿真
+  # name infinigen_objs
+  # mf_data_scene 3375
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3375
+  # mf_data_scene_frames max 146, min 88, mean 118, median 116
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle/jsons/iphone/20250815_111643_scene133.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle_1k/jsons/iphone/20250818_035144_scene212.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20250818_042021_scene500.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle_1k/jsons/iphone/20250825_031910_scene292.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20250825_031821_scene185.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Google_Scanned_Objects/jsons/iphone/20250825_041151_scene1006.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20250903_033632_scene680.json,
+      # /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Google_Scanned_Objects/jsons/iphone/20250903_035823_scene17.json, # NOTE: test
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle_1k/jsons/iphone/20250902_070052_scene105.json,
+
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20251029_134553_scene198.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons/iphone_v2/scenes_v1_iphone_obj_scene95_20251030_024517.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+    delete_portrait: true
+  
+  # 室内，目标，仿真
+  # name hablendeder_objs
+  # mf_data_scene 3416
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3416
+  # mf_data_scene_frames max 216, min 8, mean 157, median 144
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_polyhaven_20250603.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250605.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250609.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250616_part1_cut10.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+  
+  # 室内，目标，仿真
+  # name hablendeder_iphone_objs
+  # mf_data_scene 67867
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 67867
+  # mf_data_scene_frames max 216, min 50, mean 84, median 88
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v1_to_v2_total/20250710_052124_scene_008653.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250711_083257_scene_004919.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250714_060009_scene_005388.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250721_065454_scene_007636.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250728_075217_scene_005698.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250804_050530_scene_002941.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250811_122346_scene_001052_cut10.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D_fix_depth/jsons/iphone/20251030_044007_scene32935.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_iphone_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+  
+  # 室外，场景，仿真
+  # name mvssynth
+  # mf_data_scene 120
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1560
+  # mf_data_scene_frames max 100, min 100, mean 100, median 100
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+
+  # 室外，场景，仿真
+  # name unreal4k
+  # mf_data_scene 16
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1750
+  # mf_data_scene_frames max 1000, min 1000, mean 1000, median 1000
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/UnrealStereo4K/all/datas/tma_datas.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: unreal4k
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    mf_scene_delete: [ # NOTE: TEST
+      00008_cam0,
+      00008_cam1,
+    ]
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+
+  # 室内&室外，场景&目标，MVS
+  # name blendedmvs
+  # mf_data_scene 113
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 17819
+  # mf_data_scene_frames max 836, min 14, mean 157, median 96      
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/BlendedMVS/train_mf_reposed.json
+    sampling_strategy: all
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: blendedmvs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0 # mvs
+    
+    type: hAlgorithm.datasets_mv.pose_rank_dataset.PoseRankDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 50
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+
+  # 动态
+  # name kubric4d
+  # mf_data_scene 908
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 43584
+  # mf_data_scene_frames max 60, min 60, mean 60, median 60
+  # mf_data_scene_views max 16, min 16, mean 16, median 16
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/train_mf.json,
+      /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/val_mf.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+    
+  # name pointodyssey
+  # mf_data_scene 124
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 59389
+  # mf_data_scene_frames max 4325, min 558, mean 1917, median 1652
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf.json,
+      /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/train_mf.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true # NOTE
+    clip_step: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+
+  # name dynamicstereo
+  # mf_data_scene 239
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 37650
+  # mf_data_scene_frames max 900, min 300, mean 315, median 300
+  # mf_data_scene_views max 2, min 2, mean 2, median 2
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/train_mf_stereo.json,
+      # /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/test_mf_stereo.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: dynamicstereo
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.dynamicstereo_dataset.DynamicStereoDatasetMV
+    mf_to_mv: true
+    clip_step: 10
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+  
+  # name infinigen4d
+  # mf_data_scene 93
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 17856
+  # mf_data_scene_frames max 50, min 50, mean 50, median 50
+  # mf_data_scene_views max 16, min 16, mean 16, median 16
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_4D/jsons/iphone_v1/20250812_085449_scene71.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_4D/jsons/iphone_v1/20251029_134427_scene22.json
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen4d
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 3
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: none
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+  # name tartanair
+  # mf_data_scene 148
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 35226
+  # mf_data_scene_frames max 3717, min 304, mean 953, median 815
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/TartanAir/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: tartanair
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+      seed: null
+      shuffle: false
+    
+  # name sintel
+  # mf_data_scene 23
+  # mf_to_mv False sf_to_mf False
+  # mf_data_scene_frames max 49, min 19, mean 45, median 49
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Sintel/test_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 35.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: sintel
+    mf_scene_sampling_strategy: all
+    # sampling_strategy: [0, 10, 20, 30, 40]
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 16
+
+    # drop_last: false
+  

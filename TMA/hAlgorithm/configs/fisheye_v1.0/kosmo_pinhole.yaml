@@ -1,0 +1,187 @@
+datasets:
+  # kosmo
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_0
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [0]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none
+  
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_1
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [1]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none
+  # kosmo
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_2
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [2]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none
+  
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_3
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [3]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none
+  # kosmo
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_4
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [4]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none
+  
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_5
+    sampling_strategy: [10, 50, 70]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [5]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 1
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: none
+    eval_mask_name: none
+    disparity_name: none

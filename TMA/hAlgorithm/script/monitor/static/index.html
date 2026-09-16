@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training Monitor</title>
+<script src="/static/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f5f6fa;
+  --bg2: #ffffff;
+  --bg3: #eef0f6;
+  --border: #d8dce6;
+  --text: #1a1d29;
+  --text2: #5f6680;
+  --accent: #4f5bd5;
+  --accent2: #0ea5a0;
+  --red: #e53e3e;
+  --orange: #dd6b20;
+  --green: #38a169;
+  --yellow: #d69e2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 14px; font-weight: 600; color: var(--accent); }
+.header .status { font-size: 12px; color: var(--text2); margin-left: auto; }
+.header .status .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); margin-right: 4px; animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.layout { display: flex; height: calc(100vh - 37px); }
+.sidebar {
+  width: 320px; min-width: 260px; max-width: 640px; background: var(--bg2);
+  border-right: 1px solid var(--border); overflow-y: auto; padding: 12px;
+  position: relative; transition: width 0.2s, min-width 0.2s, padding 0.2s;
+}
+.sidebar.collapsed {
+  width: 32px !important; min-width: 32px !important; padding: 12px 0; overflow: hidden;
+}
+.sidebar.collapsed .sidebar-content { display: none; }
+.sidebar.collapsed .sidebar-toggle-icon { transform: rotate(180deg); }
+.sidebar-toggle {
+  position: absolute; top: 8px; right: 8px; width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text2); font-size: 10px; z-index: 10;
+  background: var(--bg3); border-radius: 4px; transition: background 0.2s;
+}
+.sidebar-toggle:hover { background: var(--border); color: var(--text); }
+.sidebar.collapsed .sidebar-toggle { right: 6px; }
+.sidebar-toggle-icon { transition: transform 0.2s; display: inline-block; }
+.sidebar-content { padding-right: 24px; }
+.sidebar-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+}
+.sidebar-resizer:hover {
+  background: var(--border);
+}
+.sidebar h3 {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text2); margin: 12px 0 8px 8px;
+}
+.exp-item {
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  margin-bottom: 2px; transition: background 0.15s; display: flex; align-items: center; gap: 8px;
+}
+.exp-item:hover { background: var(--bg3); }
+.exp-item.active { background: var(--accent); color: #fff; }
+.exp-item .exp-status { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.exp-item .exp-status.running { background: var(--green); }
+.exp-item .exp-status.stopped { background: var(--text2); }
+.exp-item .exp-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exp-item .exp-size { margin-left: auto; font-size: 10px; color: var(--text2); flex-shrink: 0; }
+.exp-item.active .exp-size { color: rgba(255,255,255,0.7); }
+.exp-count { font-size: 10px; color: var(--text2); margin-left: 4px; }
+
+.main { flex: 1; overflow-y: auto; padding: 16px; }
+.tab-bar {
+  display: flex; gap: 2px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--border); padding-bottom: 6px;
+}
+.tab-btn {
+  padding: 4px 10px; border: none; background: transparent; color: var(--text2);
+  font-size: 12px; cursor: pointer; border-radius: 4px 4px 0 0; font-family: inherit;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { background: var(--bg3); color: var(--accent); }
+
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.grid-1 { grid-template-columns: 1fr; }
+
+.card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card h4 {
+  font-size: 12px; color: var(--text2); text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.chart-container { position: relative; height: 260px; }
+.stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+.log-viewer {
+  background: #f8f9fc; border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 11px; line-height: 1.6;
+  max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; color: var(--text2);
+}
+.log-viewer .log-info { color: var(--accent2); }
+.log-viewer .log-warn { color: var(--orange); }
+.log-viewer .log-error { color: var(--red); }
+
+.eval-table { border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.eval-table th {
+  text-align: left; padding: 6px 8px; background: var(--bg3); color: var(--text2);
+  font-weight: 700; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1; white-space: nowrap;
+}
+.eval-table td { padding: 4px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; background: var(--bg2); }
+.eval-table tr:hover td { background: rgba(79, 91, 213, 0.05); }
+.eval-table tr:hover td.cmp-sticky-col { background: #f2f3f9; }
+
+.cmp-sticky-col { position: sticky; z-index: 2; }
+.cmp-sticky-col-1 { left: 0; }
+.cmp-sticky-col-2 { left: var(--sticky-col1-w, 180px); border-right: 2px solid var(--border); }
+.eval-table th.cmp-sticky-col { top: 0; z-index: 4; background: var(--bg3); }
+.eval-table td.cmp-sticky-col { background: #ffffff; font-weight: 700; }
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 1;
+}
+.col-resizer:hover, .col-resizer.active { background: var(--accent); opacity: 0.5; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text2); }
+.empty-state h3 { font-size: 16px; margin-bottom: 8px; }
+
+.refresh-controls { display: flex; align-items: center; gap: 8px; }
+.refresh-controls select, .refresh-controls button {
+  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: inherit;
+}
+.refresh-controls button:hover { background: var(--accent); color: #fff; }
+
+.compare-check { width: 14px; height: 14px; accent-color: var(--accent); cursor: pointer; margin-right: 4px; }
+
+.cmp-exp-name { white-space:nowrap; cursor:pointer; color:#000; }
+.cmp-exp-name:hover { background:rgba(0,0,0,0.06); }
+
+.badge-running { background: rgba(56, 161, 105, 0.12); color: var(--green); }
+.badge-done { background: rgba(95, 102, 128, 0.1); color: var(--text2); }
+
+.metric-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.metric-btn {
+  padding: 4px 10px; border: 1px solid var(--border); background: transparent;
+  color: var(--text2); font-size: 11px; border-radius: 4px; cursor: pointer; font-family: inherit;
+}
+.metric-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.iter-range-bar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 12px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.iter-range-bar label { color: var(--text2); font-size: 11px; white-space: nowrap; }
+.iter-range-bar input[type="range"] { flex: 1; min-width: 80px; accent-color: var(--accent); height: 4px; }
+.iter-range-bar span { font-size: 11px; color: var(--text); min-width: 40px; font-variant-numeric: tabular-nums; }
+
+.sidebar-controls {
+  padding: 4px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+}
+.sidebar-controls input[type="text"] {
+  width: 100%; padding: 6px 10px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); font-size: 12px; font-family: inherit; outline: none; margin-bottom: 6px;
+}
+.sidebar-controls input[type="text"]:focus { border-color: var(--accent); }
+.sidebar-controls select {
+  width: 100%; padding: 4px 8px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-size: 11px; font-family: inherit; cursor: pointer;
+}
+.filter-row { display: flex; gap: 12px; margin-bottom: 6px; }
+.filter-label {
+  font-size: 11px; color: var(--text2); cursor: pointer; display: flex; align-items: center; gap: 4px;
+}
+.filter-label input { accent-color: var(--accent); }
+
+@media (max-width: 1200px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 800px) { .sidebar { width: 240px; min-width: 240px; } }
+
+/* Manage tab styles */
+.manage-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.manage-table th {
+  text-align: left; padding: 8px 10px; background: var(--bg3); color: var(--text2);
+  font-weight: 500; border-bottom: 1px solid var(--border); position: sticky; top: 0; white-space: nowrap;
+}
+.manage-table td { padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.manage-table tr:hover td { background: rgba(79, 91, 213, 0.05); cursor: pointer; }
+.manage-table .exp-name-cell { max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500;
+}
+.status-badge.running { background: rgba(56, 161, 105, 0.12); color: var(--green); }
+.status-badge.completed { background: rgba(79, 91, 213, 0.12); color: var(--accent); }
+.status-badge.stopped { background: rgba(95, 102, 128, 0.1); color: var(--text2); }
+.status-badge.error { background: rgba(229, 62, 62, 0.12); color: var(--red); }
+.manage-group-header {
+  font-size: 12px; font-weight: 600; color: var(--text); padding: 10px 0 6px;
+  border-bottom: 2px solid var(--accent); margin-top: 16px; display: flex; align-items: center; gap: 8px;
+}
+.manage-group-header:first-child { margin-top: 0; }
+.manage-group-count { font-weight: 400; color: var(--text2); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 style="cursor:pointer;" onclick="document.querySelector('.main').scrollTo({top:0,behavior:'smooth'})">Training Monitor</h1>
+  <div class="refresh-controls">
+    <select id="refresh-interval">
+      <option value="1000" selected>1s refresh</option>
+      <option value="3000">3s refresh</option>
+      <option value="5000">5s refresh</option>
+      <option value="10000">10s refresh</option>
+      <option value="30000">30s refresh</option>
+      <option value="0">Manual</option>
+    </select>
+    <button onclick="refreshAll()">Refresh</button>
+  </div>
+  <div class="status">
+    <span class="dot"></span>
+    <span id="last-update">--</span>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <span class="sidebar-toggle-icon">◀</span>
+    </div>
+    <div class="sidebar-content">
+      <div class="sidebar-controls">
+        <input type="text" id="exp-search" placeholder="Search experiments..." oninput="renderSidebar()">
+        <div class="filter-row">
+          <label class="filter-label"><input type="checkbox" id="filter-running" checked onchange="renderSidebar()"> Running only</label>
+          <label class="filter-label"><input type="checkbox" id="filter-has-log" checked onchange="renderSidebar()"> Has log</label>
+        </div>
+        <select id="group-filter" onchange="renderSidebar()">
+          <option value="">All Groups</option>
+        </select>
+      </div>
+      <div id="exp-list"></div>
+    </div>
+  </div>
+  <div id="sidebar-resizer" class="sidebar-resizer"></div>
+  <div class="main">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="manage" onclick="switchTab('manage')">Manage</button>
+      <button class="tab-btn" data-tab="compare" onclick="switchTab('compare')">Compare</button>
+      <button class="tab-btn" data-tab="losses" onclick="switchTab('losses')">Losses</button>
+      <button class="tab-btn" data-tab="eval" onclick="switchTab('eval')">Evaluation</button>
+    </div>
+    <div id="no-selection" class="empty-state" style="display:none;">
+      <h3>Select an experiment</h3>
+      <p>Choose an experiment from the sidebar to view details.</p>
+    </div>
+    <div id="content" style="display:none;">
+
+      <div id="tab-overview" class="tab-content">
+        <div class="grid grid-4" style="margin-bottom:16px;">
+          <div class="card">
+            <h4>Current Iteration</h4>
+            <div class="stat-value" id="stat-iter">--</div>
+            <div class="stat-label" id="stat-progress">--</div>
+          </div>
+          <div class="card">
+            <h4>ETA</h4>
+            <div class="stat-value" id="stat-eta">--</div>
+            <div class="stat-label" id="stat-speed">--</div>
+          </div>
+          <div class="card">
+            <h4>Elapsed</h4>
+            <div class="stat-value" id="stat-elapsed">--</div>
+            <div class="stat-label" id="stat-data">--</div>
+          </div>
+          <div class="card">
+            <h4>GPU Memory</h4>
+            <div class="stat-value" id="stat-mem">--</div>
+            <div class="stat-label" id="stat-device">--</div>
+          </div>
+        </div>
+        <div class="grid grid-2" style="margin-bottom:16px;">
+          <div class="card">
+            <h4>Total Loss</h4>
+            <div class="chart-container"><canvas id="chart-loss"></canvas></div>
+          </div>
+          <div class="card">
+            <h4>Component Losses</h4>
+            <div class="chart-container"><canvas id="chart-components"></canvas></div>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          <div class="card">
+            <h4>Camera Losses</h4>
+            <div class="chart-container"><canvas id="chart-camera"></canvas></div>
+          </div>
+          <div class="card">
+            <h4>Gradient Norm & LR</h4>
+            <div class="chart-container"><canvas id="chart-grad"></canvas></div>
+          </div>
+        </div>
+        <div id="overview-other-losses"></div>
+      </div>
+
+      <div id="tab-losses" class="tab-content" style="display:none;">
+        <div class="iter-range-bar">
+          <label>Iter range:</label>
+          <input type="range" id="range-start" min="0" max="100" value="0" oninput="onRangeChange()">
+          <span id="range-start-label">0</span>
+          <span style="color:var(--text2);margin:0 4px;">—</span>
+          <input type="range" id="range-end" min="0" max="100" value="100" oninput="onRangeChange()">
+          <span id="range-end-label">--</span>
+          <button onclick="resetRange()" style="margin-left:8px;padding:2px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;cursor:pointer;">Reset</button>
+          <span style="color:var(--border);margin:0 6px;">|</span>
+          <label>Smoothing:</label>
+          <input type="range" id="smooth-slider" min="0" max="99" value="0" oninput="onRangeChange()" style="min-width:100px;">
+          <span id="smooth-label" style="min-width:30px;">0</span>
+        </div>
+        <div class="metric-selector" id="loss-metric-selector"></div>
+        <div class="card">
+          <h4>Selected Metrics</h4>
+          <div class="chart-container" style="height:500px;"><canvas id="chart-custom"></canvas></div>
+        </div>
+      </div>
+
+      <div id="tab-eval" class="tab-content" style="display:none;">
+        <div id="eval-dynamic-content"></div>
+      </div>
+
+      <div id="tab-log" class="tab-content" style="display:none;">
+        <div class="card">
+          <h4>Live Log (Last 100 Lines)</h4>
+          <div class="log-viewer" id="log-content"></div>
+        </div>
+      </div>
+
+      <div id="tab-config" class="tab-content" style="display:none;">
+        <div class="card">
+          <h4>Experiment Config</h4>
+          <div class="log-viewer" id="config-content" style="max-height:700px;background:#1a1d29;color:#e0e0e0;"></div>
+        </div>
+      </div>
+
+    </div>
+    <div id="tab-compare" class="tab-content" style="display:none;">
+      <div class="card" style="margin-bottom:16px;">
+        <h4>Select Experiments to Compare</h4>
+        <div id="compare-exp-list" style="max-height:800px;overflow-y:auto;"></div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
+          <button onclick="runCompare()" style="padding:6px 16px;background:var(--accent);border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit;">Compare</button>
+          <button onclick="openVisCompare()" style="padding:6px 16px;background:var(--accent2);border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit;">Visualize</button>
+          <button onclick="openReportDialog()" style="padding:6px 16px;background:#d97706;border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit;">Report</button>
+          <button onclick="clearCompareSelection()" style="padding:6px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:4px;cursor:pointer;font-family:inherit;">Clear</button>
+          <label style="font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="cmp-show-loss"> Show Loss Curves</label>
+          <label style="font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="cmp-show-eval-charts" checked> Show Eval Charts</label>
+        </div>
+      </div>
+      <div id="compare-results"></div>
+    </div>
+    <div id="tab-manage" class="tab-content" style="display:none;">
+      <div class="card" style="margin-bottom:16px;">
+        <h4>Experiment Management</h4>
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+          <input type="text" id="manage-search" placeholder="Search experiments..." style="width:500px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;">
+          <select id="manage-status-filter" style="padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;">
+            <option value="">All Status</option>
+            <option value="running">Running</option>
+            <option value="completed">Completed</option>
+            <option value="stopped">Stopped</option>
+          </select>
+          <select id="manage-sort" onchange="renderManageList()" style="padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;">
+            <option value="name">Sort: Name</option>
+            <option value="last_update">Sort: Last Update</option>
+            <option value="start_time">Sort: Start Time</option>
+          </select>
+          <button onclick="compareSelectedBackups()" style="padding:6px 16px;background:var(--accent2);border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit;">Compare Config</button>
+          <button onclick="openFeishuModal()" style="padding:6px 16px;background:#3370ff;border:none;color:#fff;border-radius:4px;cursor:pointer;font-family:inherit;">Feishu</button>
+        </div>
+        <div id="manage-exp-list" style="max-height:calc(100vh - 250px);overflow-y:auto;"></div>
+      </div>
+    </div>
+    
+    <!-- Baseline Selector Modal -->
+    <div id="baseline-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1001;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:460px;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="font-size:14px;font-weight:600;">Generate Analysis Report</h3>
+          <button onclick="document.getElementById('baseline-modal').style.display='none'" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+        </div>
+        <div style="padding:16px;">
+          <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:6px;">Select baseline experiment:</label>
+          <select id="baseline-select" style="width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;margin-bottom:12px;"></select>
+          <div id="baseline-exp-list" style="font-size:11px;color:var(--text2);margin-bottom:14px;max-height:200px;overflow-y:auto;"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="document.getElementById('baseline-modal').style.display='none'" style="padding:6px 16px;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:4px;cursor:pointer;font-size:12px;">Cancel</button>
+            <button onclick="generateReport()" style="padding:6px 16px;background:#d97706;border:none;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;">Generate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analysis Report Modal -->
+    <div id="report-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:90%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 id="report-modal-title" style="font-size:14px;font-weight:600;">Analysis Report</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="copyReport()" style="padding:4px 12px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--text);">Copy MD</button>
+            <button onclick="downloadReport()" style="padding:4px 12px;font-size:11px;background:var(--accent);border:none;border-radius:4px;cursor:pointer;color:#fff;">Download</button>
+            <button onclick="document.getElementById('report-modal').style.display='none'" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+          </div>
+        </div>
+        <div id="report-content" style="flex:1;overflow:auto;padding:16px;font-size:13px;line-height:1.7;"></div>
+      </div>
+    </div>
+
+    <!-- Feishu Config Modal -->
+    <div id="feishu-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:420px;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="font-size:14px;font-weight:600;">Feishu Notification</h3>
+          <button onclick="closeFeishuModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;">Webhook URL</label>
+            <input type="text" id="feishu-webhook-url" autocomplete="off" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..." style="width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;font-family:monospace;">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:var(--text2);margin-bottom:4px;">Running Push Interval (seconds, 0 = disabled)</label>
+            <input type="number" id="feishu-interval" min="0" step="1" value="0" style="width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;">
+          </div>
+          <div id="feishu-status" style="font-size:11px;color:var(--text2);min-height:16px;"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button onclick="testFeishu()" style="padding:6px 16px;background:var(--accent2);border:none;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;">Test</button>
+            <button onclick="saveFeishuConfig()" style="padding:6px 16px;background:#3370ff;border:none;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backup.py Modal -->
+    <div id="backup-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:80%;max-width:1000px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 id="backup-modal-title" style="font-size:14px;font-weight:600;">backup.py</h3>
+          <button onclick="closeBackupModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+        </div>
+        <div id="backup-content" style="flex:1;overflow:auto;padding:12px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;background:#1a1d29;color:#e0e0e0;"></div>
+      </div>
+    </div>
+    
+    <!-- Eval Modal -->
+    <div id="eval-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:90%;max-width:1400px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 id="eval-modal-title" style="font-size:14px;font-weight:600;">Evaluation Metrics</h3>
+          <button onclick="closeEvalModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:16px;">
+          <div id="eval-modal-metrics" style="margin-bottom:16px;"></div>
+          <div id="eval-modal-charts"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Log Modal -->
+    <div id="log-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:90%;max-width:1200px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 id="log-modal-title" style="font-size:14px;font-weight:600;">Log</h3>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button onclick="refreshLogModal()" style="padding:4px 12px;font-size:12px;background:var(--accent);border:none;border-radius:4px;cursor:pointer;color:#fff;">Refresh</button>
+            <button onclick="closeLogModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+          </div>
+        </div>
+        <div id="log-modal-content" style="flex:1;overflow:auto;padding:12px;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:1.6;white-space:pre-wrap;background:#1a1d29;color:#e0e0e0;"></div>
+      </div>
+    </div>
+    
+    <!-- Backup Compare Modal -->
+    <div id="backup-compare-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:var(--bg2);border-radius:8px;width:95%;max-width:1800px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <h3 id="backup-compare-title" style="font-size:14px;font-weight:600;">Compare Config Files</h3>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span id="diff-summary" style="font-size:11px;color:var(--text2);"></span>
+            <button onclick="closeBackupCompareModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);">&times;</button>
+          </div>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid var(--border);">
+            <div id="backup-compare-title1" style="padding:8px 12px;background:var(--bg3);font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;">
+              <span style="color:#f87171;">●</span><span id="backup-compare-name1"></span>
+            </div>
+            <div id="backup-compare-content1" class="diff-content" style="flex:1;overflow:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:20px;background:#1a1d29;color:#e0e0e0;"></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <div id="backup-compare-title2" style="padding:8px 12px;background:var(--bg3);font-size:12px;font-weight:500;display:flex;align-items:center;gap:8px;">
+              <span style="color:#4ade80;">●</span><span id="backup-compare-name2"></span>
+            </div>
+            <div id="backup-compare-content2" class="diff-content" style="flex:1;overflow:auto;font-family:'JetBrains Mono','Fira Code',monospace;font-size:11px;line-height:20px;background:#1a1d29;color:#e0e0e0;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <style>
+      .diff-content .diff-line { display:flex; min-height:20px; }
+      .diff-content .line-num { width:40px; padding:0 8px; text-align:right; color:#6b7280; background:#0d1117; user-select:none; flex-shrink:0; border-right:1px solid #30363d; }
+      .diff-content .line-code { flex:1; padding:0 12px; white-space:pre; }
+      .diff-content .diff-del { background:rgba(248,113,113,0.15); }
+      .diff-content .diff-del .line-num { background:rgba(248,113,113,0.2); color:#f87171; }
+      .diff-content .diff-del .line-code { background:rgba(248,113,113,0.1); }
+      .diff-content .diff-add { background:rgba(74,222,128,0.15); }
+      .diff-content .diff-add .line-num { background:rgba(74,222,128,0.2); color:#4ade80; }
+      .diff-content .diff-add .line-code { background:rgba(74,222,128,0.1); }
+      .diff-content .diff-mod { background:rgba(251,191,36,0.15); }
+      .diff-content .diff-mod .line-num { background:rgba(251,191,36,0.2); color:#fbbf24; }
+      .diff-content .diff-mod .line-code { background:rgba(251,191,36,0.1); }
+    </style>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  '#4f5bd5','#0ea5a0','#e53e3e','#dd6b20','#38a169','#d69e2e',
+  '#9f7aea','#3182ce','#e53e8c','#48bb78','#b794f4','#ecc94b'
+];
+
+let experiments = [];
+let currentExp = null;
+let charts = {};
+let refreshTimer = null;
+let allTrainData = {};
+let allEvalData = {};
+let selectedLossMetrics = new Set(['loss', 'lcl', 'glb', 'cm']);
+let rangeStartPct = 0;
+let rangeEndPct = 100;
+let smoothWeight = 0;
+let refreshCount = 0;
+
+function getFilteredRecords(records) {
+  if (!records || !records.length) return records;
+  const n = records.length;
+  const si = Math.floor(rangeStartPct / 100 * n);
+  const ei = Math.max(si + 1, Math.ceil(rangeEndPct / 100 * n));
+  return records.slice(si, ei);
+}
+
+function emaSmooth(data, weight) {
+  if (weight <= 0) return null;
+  const result = [];
+  let last = null;
+  for (const v of data) {
+    if (v == null) { result.push(null); continue; }
+    last = last == null ? v : weight * last + (1 - weight) * v;
+    result.push(last);
+  }
+  return result;
+}
+
+function onRangeChange() {
+  rangeStartPct = parseInt(document.getElementById('range-start').value);
+  rangeEndPct = parseInt(document.getElementById('range-end').value);
+  smoothWeight = parseInt(document.getElementById('smooth-slider').value) / 100;
+  document.getElementById('smooth-label').textContent = smoothWeight.toFixed(2);
+  if (rangeStartPct >= rangeEndPct) {
+    rangeEndPct = Math.min(rangeStartPct + 1, 100);
+    document.getElementById('range-end').value = rangeEndPct;
+  }
+  if (currentExp) {
+    const key = `${currentExp.group}/${currentExp.name}`;
+    const trainRes = allTrainData[key];
+    if (trainRes && trainRes.records.length) {
+      const n = trainRes.records.length;
+      const si = Math.floor(rangeStartPct / 100 * n);
+      const ei = Math.max(si + 1, Math.ceil(rangeEndPct / 100 * n));
+      document.getElementById('range-start-label').textContent = trainRes.records[si] ? trainRes.records[si].iter : 0;
+      document.getElementById('range-end-label').textContent = trainRes.records[Math.min(ei, n) - 1] ? trainRes.records[Math.min(ei, n) - 1].iter : '--';
+      updateLossesTab(trainRes);
+    }
+  }
+}
+
+function resetRange() {
+  rangeStartPct = 0; rangeEndPct = 100; smoothWeight = 0;
+  document.getElementById('range-start').value = 0;
+  document.getElementById('range-end').value = 100;
+  document.getElementById('smooth-slider').value = 0;
+  onRangeChange();
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + 'B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + 'KB';
+  return (bytes/(1024*1024)).toFixed(1) + 'MB';
+}
+function formatTime() { return new Date().toLocaleTimeString(); }
+function isRunning(exp) { return exp.has_log && (Date.now()/1000 - exp.log_mtime) < 120; }
+
+function showError(msg) {
+  let el = document.getElementById('error-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'error-banner';
+    el.style.cssText = 'position:fixed;top:49px;left:320px;right:0;z-index:200;background:#fee2e2;border-bottom:1px solid #e53e3e;padding:8px 16px;font-size:12px;color:#c53030;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => { if (el) el.style.display = 'none'; }, 10000);
+}
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  return res.json();
+}
+
+async function loadExperiments() {
+  experiments = await fetchJSON('/api/experiments');
+  updateGroupFilter(); renderSidebar();
+  // restore sidebar width from localStorage
+  try {
+    const saved = localStorage.getItem('monitor_sidebar_width');
+    if (saved) {
+      const w = parseInt(saved);
+      if (w >= 260 && w <= 640) {
+        const sidebar = document.querySelector('.sidebar');
+        sidebar.style.width = w + 'px';
+        sidebar.style.minWidth = w + 'px';
+      }
+    }
+  } catch (e) {}
+}
+
+function updateGroupFilter() {
+  const sel = document.getElementById('group-filter');
+  const currentVal = sel.value;
+  const allGroups = new Set();
+  experiments.forEach(e => {
+    const parts = e.group.split('/');
+    for (let i = 1; i <= parts.length; i++) allGroups.add(parts.slice(0, i).join('/'));
+  });
+  const groups = [...allGroups].sort();
+  sel.innerHTML = '<option value="">All Groups</option>' +
+    groups.map(g => `<option value="${g}" ${g === currentVal ? 'selected' : ''}>${g}</option>`).join('');
+}
+
+function getFilteredExperiments() {
+  const search = (document.getElementById('exp-search').value || '').toLowerCase();
+  const runningOnly = document.getElementById('filter-running').checked;
+  const hasLogOnly = document.getElementById('filter-has-log').checked;
+  const groupFilter = document.getElementById('group-filter').value;
+  return experiments.filter(e => {
+    if (search && !e.name.toLowerCase().includes(search) && !e.group.toLowerCase().includes(search)) return false;
+    if (runningOnly && !isRunning(e)) return false;
+    if (hasLogOnly && !e.has_log) return false;
+    if (groupFilter && e.group !== groupFilter && !e.group.startsWith(groupFilter + '/')) return false;
+    return true;
+  });
+}
+
+// Track collapsed groups (debug is collapsed by default)
+let collapsedGroups = new Set(['debug']);
+let sidebarCollapsedInitialized = false;
+
+// Sidebar collapse state
+let sidebarCollapsed = true; // Default collapsed
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sidebar = document.getElementById('sidebar');
+  const resizer = document.getElementById('sidebar-resizer');
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+    resizer.style.display = 'none';
+  } else {
+    sidebar.classList.remove('collapsed');
+    resizer.style.display = 'block';
+  }
+}
+// Initialize sidebar state on load
+document.addEventListener('DOMContentLoaded', () => {
+  if (sidebarCollapsed) {
+    document.getElementById('sidebar').classList.add('collapsed');
+    document.getElementById('sidebar-resizer').style.display = 'none';
+  }
+});
+
+function toggleGroupCollapse(group) {
+  if (collapsedGroups.has(group)) {
+    collapsedGroups.delete(group);
+  } else {
+    collapsedGroups.add(group);
+  }
+  renderSidebar();
+}
+
+function renderSidebar() {
+  const el = document.getElementById('exp-list');
+  const filtered = getFilteredExperiments();
+  let html = '';
+  let groups = {};
+  filtered.forEach(e => { if (!groups[e.group]) groups[e.group] = []; groups[e.group].push(e); });
+  
+  // All groups collapsed by default (only on first render)
+  if (!sidebarCollapsedInitialized) {
+    Object.keys(groups).forEach(group => {
+      collapsedGroups.add(group);
+    });
+    sidebarCollapsedInitialized = true;
+  }
+  for (const [group, exps] of Object.entries(groups)) {
+    const groupRunning = exps.filter(e => isRunning(e)).length;
+    const isCollapsed = collapsedGroups.has(group);
+    const arrow = isCollapsed ? '▶' : '▼';
+    html += `<h3 onclick="toggleGroupCollapse('${group}')" style="cursor:pointer;user-select:none;">
+      <span style="font-size:10px;margin-right:4px;">${arrow}</span>${group.toLowerCase()} 
+      <span class="exp-count">(${exps.length}${groupRunning ? ', ' + groupRunning + ' running' : ''})</span>
+    </h3>`;
+    if (!isCollapsed) {
+      exps.forEach(e => {
+        const running = isRunning(e);
+        const active = currentExp && currentExp.group === e.group && currentExp.name === e.name;
+        html += `<div class="exp-item ${active ? 'active' : ''}" onclick="selectExp('${e.group}','${e.name}')">
+          <span class="exp-status ${running ? 'running' : 'stopped'}"></span>
+          <span class="exp-name" title="${e.name}">${e.name}</span>
+          <span class="exp-size">${formatSize(e.log_size)}</span>
+        </div>`;
+      });
+    }
+  }
+  if (!filtered.length) html = '<div style="padding:20px;text-align:center;color:var(--text2);font-size:12px;">No experiments match filters</div>';
+  el.innerHTML = html;
+}
+
+async function selectExp(group, name) {
+  currentExp = experiments.find(e => e.group === group && e.name === name);
+  const activeTab = document.querySelector('.tab-btn.active');
+  if (!activeTab || activeTab.dataset.tab === 'compare') {
+    switchTab('overview');
+  } else {
+    switchTab(activeTab.dataset.tab);
+  }
+  renderSidebar();
+  await loadExpData();
+}
+
+async function loadExpData() {
+  if (!currentExp) return;
+  const { group, name } = currentExp;
+  let trainRes, evalRes;
+  try {
+    [trainRes, evalRes] = await Promise.all([
+      fetchJSON(`/api/training_data?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}&sample=2000`),
+      fetchJSON(`/api/eval_data?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}`)
+    ]);
+  } catch (e) { showError('Failed to load data: ' + e.message); return; }
+  allTrainData[`${group}/${name}`] = trainRes;
+  allEvalData[`${group}/${name}`] = evalRes;
+  try { updateOverview(trainRes, evalRes); } catch(e) { console.error('updateOverview error:', e); showError('Overview error: ' + e.message); }
+  try { updateLossesTab(trainRes); } catch(e) { console.error('updateLossesTab error:', e); }
+  try { updateEvalTab(evalRes); } catch(e) { console.error('updateEvalTab error:', e); }
+  document.getElementById('last-update').textContent = `Updated ${formatTime()}`;
+}
+
+function updateOverview(trainRes, evalRes) {
+  const { records, timing } = trainRes;
+  if (!records || !records.length) { document.getElementById('stat-iter').textContent = 'No data'; return; }
+  const last = records[records.length - 1];
+  document.getElementById('stat-iter').textContent = last.iter;
+  document.getElementById('stat-progress').textContent = `loss: ${(last.loss != null ? last.loss : 0).toFixed(4)}`;
+  if (timing) {
+    document.getElementById('stat-eta').textContent = timing.eta || '--';
+    document.getElementById('stat-speed').textContent = `${timing.mean_time.toFixed(2)}s/iter`;
+    document.getElementById('stat-elapsed').textContent = timing.total || '--';
+    document.getElementById('stat-data').textContent = last.data || '';
+  }
+  document.getElementById('stat-mem').textContent = last.mem ? `${Math.round(last.mem)}M` : '--';
+  document.getElementById('stat-device').textContent = `bs:${last.bs||''} view:${last.view||''}`;
+
+  if (typeof Chart === 'undefined') { showError('Chart.js not loaded'); return; }
+  const iters = records.map(r => r.iter);
+  const makeDataset = (label, key, color, opts = {}) => ({
+    label, data: records.map(r => r[key] != null ? r[key] : null),
+    borderColor: color, borderWidth: 1.5, pointRadius: 0, fill: false, spanGaps: true, ...opts,
+  });
+  updateChart('chart-loss', { labels: iters, datasets: [makeDataset('Total Loss', 'loss', COLORS[0], { tension: 0.1 })] });
+  updateChart('chart-components', { labels: iters, datasets: [
+    makeDataset('lcl', 'lcl', COLORS[1]), makeDataset('glb', 'glb', COLORS[2]), makeDataset('cm', 'cm', COLORS[3]),
+  ]});
+  updateChart('chart-camera', { labels: iters, datasets: [
+    makeDataset('cm_loss_T', 'cm_loss_T', COLORS[4]), makeDataset('cm_loss_R', 'cm_loss_R', COLORS[5]), makeDataset('cm_loss_fl', 'cm_loss_fl', COLORS[6]),
+  ]});
+  updateChart('chart-grad', { labels: iters, datasets: [
+    makeDataset('grad_norm', 'grad_norm', COLORS[7], { yAxisID: 'y' }),
+    makeDataset('lr', 'lr0', COLORS[8], { yAxisID: 'y1' }),
+  ]}, { scales: {
+    y: { position: 'left', title: { display: true, text: 'grad_norm', color: '#5f6680' } },
+    y1: { position: 'right', title: { display: true, text: 'lr', color: '#5f6680' }, grid: { drawOnChartArea: false } },
+  }});
+
+  const knownKeys = new Set(['iter','timestamp','data','bs','view','loss','lcl','glb','cm','cm_loss_T','cm_loss_R','cm_loss_fl','grad_norm','lr0','mem','scale','aspect_ratio','max_size']);
+  const otherKeys = [];
+  const allKeys = new Set();
+  records.forEach(r => Object.keys(r).forEach(k => allKeys.add(k)));
+  allKeys.forEach(k => {
+    if (!knownKeys.has(k) && records.some(r => typeof r[k] === 'number'))
+      otherKeys.push(k);
+  });
+  const otherContainer = document.getElementById('overview-other-losses');
+  Object.keys(charts).forEach(k => { if (k.startsWith('chart-other-')) { charts[k].destroy(); delete charts[k]; } });
+  if (otherKeys.length) {
+    const pairs = [];
+    for (let i = 0; i < otherKeys.length; i += 2) pairs.push(otherKeys.slice(i, i + 2));
+    let html = '';
+    pairs.forEach(pair => {
+      html += '<div class="grid grid-2" style="margin-top:16px;">';
+      pair.forEach(k => {
+        html += `<div class="card"><h4>${k}</h4><div class="chart-container"><canvas id="chart-other-${k}"></canvas></div></div>`;
+      });
+      html += '</div>';
+    });
+    otherContainer.innerHTML = html;
+    otherKeys.forEach((k, i) => {
+      updateChart('chart-other-' + k, { labels: iters, datasets: [makeDataset(k, k, COLORS[(i + 9) % COLORS.length])] });
+    });
+  } else {
+    otherContainer.innerHTML = '';
+  }
+}
+
+function updateLossesTab(trainRes) {
+  const { records } = trainRes;
+  if (!records || !records.length) return;
+  const allMetrics = new Set();
+  records.forEach(r => { Object.keys(r).forEach(k => {
+    if (k !== 'iter' && k !== 'timestamp' && k !== 'data' && k !== 'bs' && k !== 'view' && (typeof r[k] === 'number' || r[k] === null)) allMetrics.add(k);
+  }); });
+  const selectorEl = document.getElementById('loss-metric-selector');
+  selectorEl.innerHTML = Array.from(allMetrics).sort().map(m =>
+    `<button class="metric-btn ${selectedLossMetrics.has(m) ? 'active' : ''}" onclick="toggleMetric('${m}')">${m}</button>`
+  ).join('');
+
+  const filtered = getFilteredRecords(records);
+  const iters = filtered.map(r => r.iter);
+  const datasets = [];
+  let ci = 0;
+  selectedLossMetrics.forEach(m => {
+    if (allMetrics.has(m)) {
+      const rawData = filtered.map(r => r[m] != null ? r[m] : null);
+      const color = COLORS[ci % COLORS.length];
+      if (smoothWeight > 0) {
+        datasets.push({ label: m + ' (raw)', data: rawData, borderColor: color + '30', borderWidth: 1, pointRadius: 0, fill: false, spanGaps: true });
+        datasets.push({ label: m, data: emaSmooth(rawData, smoothWeight), borderColor: color, borderWidth: 2, pointRadius: 0, fill: false, spanGaps: true });
+      } else {
+        datasets.push({ label: m, data: rawData, borderColor: color, borderWidth: 1.5, pointRadius: 0, fill: false, spanGaps: true });
+      }
+      ci++;
+    }
+  });
+  updateChart('chart-custom', { labels: iters, datasets });
+}
+
+function toggleMetric(m) {
+  if (selectedLossMetrics.has(m)) selectedLossMetrics.delete(m); else selectedLossMetrics.add(m);
+  if (currentExp) { const key = `${currentExp.group}/${currentExp.name}`; if (allTrainData[key]) updateLossesTab(allTrainData[key]); }
+}
+
+function groupMetricKeys(metricKeys) {
+  const cameraSet = new Set(['rangle','tangle','auc_30','auc_1','fov_l1']);
+  const groups = { 'Local': [], 'Local (conf)': [], 'Local2Global': [], 'Global': [], 'Global (conf)': [], 'Camera': [], 'Other': [] };
+  metricKeys.forEach(k => {
+    if (cameraSet.has(k)) groups['Camera'].push(k);
+    else if (k.startsWith('local2glb_')) groups['Local2Global'].push(k);
+    else if (k.startsWith('glb_') && (k.includes('conf') || k.includes('valid_ratio'))) groups['Global (conf)'].push(k);
+    else if (k.startsWith('glb_')) groups['Global'].push(k);
+    else if (k.includes('conf') || k.includes('valid_ratio')) groups['Local (conf)'].push(k);
+    else if (/^(abs_rel|sq_rel|rmse|a[0-9]|silog|pointmap|distance|abs_relative)/.test(k)) groups['Local'].push(k);
+    else groups['Other'].push(k);
+  });
+  return Object.entries(groups).filter(([, v]) => v.length > 0);
+}
+
+function updateEvalTab(evalRes) {
+  const container = document.getElementById('eval-dynamic-content');
+  if (!evalRes || !evalRes.length) { container.innerHTML = '<div class="card"><p style="color:var(--text2);padding:20px;">No evaluation results yet.</p></div>'; return; }
+  Object.keys(charts).forEach(k => { if (k.startsWith('chart-eval-metric-')) { charts[k].destroy(); delete charts[k]; } });
+
+  const skipKeys = new Set(['file', 'format_text', 'dataset', 'iter']);
+
+  // Group by dataset (from file path: "hypersim/eval-..." or "eval-hypersim-...")
+  const byDataset = {};
+  evalRes.forEach(r => {
+    let ds = r.dataset || 'unknown';
+    if (!r.dataset && r.file) {
+      const m = r.file.match(/eval-(\w+)-/);
+      if (m) ds = m[1];
+    }
+    if (!byDataset[ds]) byDataset[ds] = [];
+    byDataset[ds].push(r);
+  });
+  const datasetNames = Object.keys(byDataset).sort();
+  const dsColors = {};
+  datasetNames.forEach((ds, i) => { dsColors[ds] = COLORS[i % COLORS.length]; });
+
+  // Collect all metric keys across all datasets
+  const allMetricKeys = []; const seen = new Set();
+  evalRes.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); allMetricKeys.push(k); } }); });
+  const grouped = groupMetricKeys(allMetricKeys);
+
+  // --- Metric cards with multi-dataset lines ---
+  let globalIdx = 0;
+  let html = '';
+  if (datasetNames.length > 1) {
+    html += '<div style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">';
+    html += '<span style="font-size:12px;color:var(--text2);font-weight:500;">Datasets:</span>';
+    datasetNames.forEach(ds => {
+      html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;"><span style="width:10px;height:10px;border-radius:2px;background:${dsColors[ds]};display:inline-block;"></span>${ds}</span>`;
+    });
+    html += '</div>';
+  }
+  grouped.forEach(([groupName, keys]) => {
+    html += `<div style="margin-bottom:16px;">
+      <h3 style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;padding-left:4px;">${groupName}</h3>
+      <div>`;
+    keys.forEach(k => {
+      let latestParts = [];
+      datasetNames.forEach(ds => {
+        const dsData = byDataset[ds].filter(r => r.iter !== undefined).sort((a, b) => a.iter - b.iter);
+        if (!dsData.length) return;
+        const last = dsData[dsData.length - 1];
+        if (last[k] != null) latestParts.push(`<span style="color:${dsColors[ds]};font-size:11px;">${ds}: ${last[k].toFixed(5)}</span>`);
+      });
+      const canvasId = `chart-eval-metric-${globalIdx}`;
+      html += `<div class="card" style="margin-bottom:12px;">
+        <h4>${k}</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;">${latestParts.join('')}</div>
+        <div style="height:400px;"><canvas id="${canvasId}"></canvas></div>
+      </div>`;
+      globalIdx++;
+    });
+    html += '</div></div>';
+  });
+
+  // --- Tables per dataset ---
+  datasetNames.forEach(ds => {
+    const dsData = byDataset[ds];
+    const dsMetricKeys = []; const dsSeen = new Set();
+    dsData.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !dsSeen.has(k) && typeof r[k] === 'number') { dsSeen.add(k); dsMetricKeys.push(k); } }); });
+    const dsGrouped = groupMetricKeys(dsMetricKeys);
+    const dsOrdered = [];
+    dsGrouped.forEach(([, keys]) => keys.forEach(k => dsOrdered.push(k)));
+
+    html += `<div class="card" style="margin-bottom:12px;"><h4 style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:2px;background:${dsColors[ds]};display:inline-block;"></span>${ds}</h4><div style="overflow-x:auto;">`;
+    html += '<table class="eval-table"><thead>';
+    html += '<tr><th rowspan="2" style="vertical-align:bottom;">File</th><th rowspan="2" style="vertical-align:bottom;">iter</th>';
+    dsGrouped.forEach(([groupName, keys]) => {
+      html += `<th colspan="${keys.length}" style="text-align:center;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;color:var(--accent);">${groupName}</th>`;
+    });
+    html += '</tr><tr>';
+    dsOrdered.forEach(k => html += `<th>${k}</th>`);
+    html += '</tr></thead><tbody>';
+    dsData.forEach(r => {
+      html += `<tr><td style="font-size:11px;">${r.file || ''}</td>`;
+      const iv = r['iter']; html += `<td>${iv !== undefined ? iv : ''}</td>`;
+      dsOrdered.forEach(k => { const v = r[k]; html += `<td>${v !== undefined ? (typeof v === 'number' ? v.toFixed(5) : v) : ''}</td>`; });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div></div>';
+  });
+
+  container.innerHTML = html;
+
+  // --- Draw charts with multi-dataset lines ---
+  globalIdx = 0;
+  grouped.forEach(([, keys]) => {
+    keys.forEach(k => {
+      const canvasId = `chart-eval-metric-${globalIdx}`;
+      const datasets = [];
+      let allMin = Infinity, allMax = -Infinity;
+      datasetNames.forEach(ds => {
+        const dsIter = byDataset[ds].filter(r => r.iter !== undefined).sort((a, b) => a.iter - b.iter);
+        if (!dsIter.length) return;
+        const values = dsIter.map(r => r[k] != null ? r[k] : null);
+        if (!values.some(v => v !== null)) return;
+        const valid = values.filter(v => v !== null);
+        allMin = Math.min(allMin, ...valid);
+        allMax = Math.max(allMax, ...valid);
+          datasets.push({
+            label: ds, data: dsIter.map(r => ({ x: r.iter, y: r[k] != null ? r[k] : null })),
+            borderColor: dsColors[ds] + 'aa', backgroundColor: dsColors[ds] + '18',
+            borderWidth: 1.5, pointRadius: 2, fill: false, spanGaps: true,
+          });
+      });
+      if (datasets.length) {
+        const pad = Math.max((allMax - allMin) * 0.1, allMax * 0.01, 1e-6);
+        updateChart(canvasId, { datasets }, { _small: true, scales: {
+          x: { type: 'linear', display: true, ticks: { maxTicksLimit: 8, font: { size: 10 } } },
+          y: { display: true, min: allMin - pad, max: allMax + pad, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
+        } });
+      }
+      globalIdx++;
+    });
+  });
+}
+
+function updateChart(canvasId, data, extraOpts = {}) {
+  if (typeof Chart === 'undefined') return;
+  try {
+    if (charts[canvasId]) {
+      try { charts[canvasId].data = data; charts[canvasId].update('none'); return; }
+      catch (e) { charts[canvasId].destroy(); delete charts[canvasId]; }
+    }
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    const isSmall = extraOpts._small;
+    const scalesBase = {
+      x: { ticks: { color: '#3a3f52', maxTicksLimit: isSmall ? 8 : 15, font: { size: 10 } }, grid: { color: '#d0d4de' } },
+      y: { ticks: { color: '#3a3f52', maxTicksLimit: isSmall ? 10 : 12, font: { size: 10 } }, grid: { color: '#d0d4de' } },
+    };
+    if (extraOpts.scales) {
+      Object.keys(extraOpts.scales).forEach(k => {
+        scalesBase[k] = { ...extraOpts.scales[k],
+          ticks: { color: '#3a3f52', maxTicksLimit: isSmall ? 10 : 12, ...(extraOpts.scales[k].ticks || {}) },
+          grid: { color: '#d0d4de', ...(extraOpts.scales[k].grid || {}) },
+        };
+      });
+    }
+    const chart = new Chart(ctx, { type: 'line', data, options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255,255,255,0.55)', titleColor: 'rgba(26,29,41,0.55)', bodyColor: 'rgba(26,29,41,0.55)', borderColor: 'rgba(216,220,230,0.5)', borderWidth: 1,
+          callbacks: {
+            label: function(ctx) { return ctx.parsed.y != null ? ctx.parsed.y.toFixed(5) : ''; }
+          }
+        },
+      },
+      scales: scalesBase,
+    },
+    plugins: []
+    });
+    charts[canvasId] = chart;
+
+    // Side-by-side layout: legend left, chart right (max-width always applied)
+    const parent = ctx.parentElement;
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display:flex;gap:12px;align-items:stretch;';
+    if (data.datasets && data.datasets.length >= 1) {
+      const legendDiv = document.createElement('div');
+      legendDiv.style.cssText = 'flex-shrink:0;width:400px;font-size:11px;line-height:1.5;overflow-y:auto;padding:4px 0;';
+      data.datasets.forEach(ds => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:flex-start;gap:4px;color:#5f6680;cursor:pointer;padding:2px 0;';
+        const dot = document.createElement('span');
+        dot.style.cssText = `flex-shrink:0;width:10px;height:10px;border-radius:2px;margin-top:3px;background:${ds.borderColor};`;
+        if (ds.borderDash && ds.borderDash.length) dot.style.opacity = '0.6';
+        const txt = document.createElement('span');
+        txt.style.cssText = 'word-break:break-word;font-weight:900;';
+        txt.textContent = ds.label || '';
+        item.appendChild(dot);
+        item.appendChild(txt);
+        item.addEventListener('click', () => {
+          const idx = data.datasets.indexOf(ds);
+          const meta = chart.getDatasetMeta(idx);
+          meta.hidden = !meta.hidden;
+          item.style.opacity = meta.hidden ? '0.35' : '1';
+          chart.update('none');
+        });
+        legendDiv.appendChild(item);
+      });
+      wrapper.appendChild(legendDiv);
+    }
+    const chartBox = document.createElement('div');
+    chartBox.style.cssText = 'flex:1;max-width:900px;position:relative;';
+    parent.parentElement.insertBefore(wrapper, parent);
+    wrapper.appendChild(chartBox);
+    chartBox.appendChild(parent);
+
+    // Lightweight overlay crosshair
+    const canvasParent = ctx.parentElement;
+    canvasParent.style.position = 'relative';
+    const overlay = document.createElement('canvas');
+    overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+    canvasParent.appendChild(overlay);
+    function syncOverlaySize() {
+      const r = ctx.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      overlay.width = Math.round(r.width * dpr);
+      overlay.height = Math.round(r.height * dpr);
+    }
+    syncOverlaySize();
+    const ro = new ResizeObserver(syncOverlaySize);
+    ro.observe(ctx);
+
+    ctx.addEventListener('mousemove', function(e) {
+      const oc = overlay.getContext('2d');
+      oc.clearRect(0, 0, overlay.width, overlay.height);
+      const area = chart.chartArea;
+      if (!area) return;
+      const rect = ctx.getBoundingClientRect();
+      const dpr = overlay.width / rect.width;
+      const mx = (e.clientX - rect.left) * dpr;
+      const my = (e.clientY - rect.top) * dpr;
+      if (mx < area.left || mx > area.right || my < area.top || my > area.bottom) return;
+      oc.save();
+      oc.setLineDash([4, 3]);
+      oc.lineWidth = 1;
+      oc.strokeStyle = '#888';
+      oc.beginPath(); oc.moveTo(mx, area.top); oc.lineTo(mx, area.bottom); oc.stroke();
+      oc.beginPath(); oc.moveTo(area.left, my); oc.lineTo(area.right, my); oc.stroke();
+      oc.setLineDash([]);
+      const xScale = chart.scales.x, yScale = chart.scales.y;
+      if (xScale && yScale) {
+        const xVal = xScale.getValueForPixel(mx);
+        const yVal = yScale.getValueForPixel(my);
+        const xText = '' + (typeof xVal === 'number' ? Math.round(xVal) : xVal);
+        // Match y-axis tick decimal format
+        let yDigits = 5;
+        const yTicks = yScale.ticks;
+        if (yTicks && yTicks.length > 1) {
+          const tickStr = yScale.getLabelForValue(yTicks[1].value);
+          const dotIdx = String(tickStr).indexOf('.');
+          if (dotIdx >= 0) yDigits = String(tickStr).length - dotIdx - 1;
+          else yDigits = 0;
+        }
+        const yText = '' + (typeof yVal === 'number' ? yVal.toFixed(yDigits) : yVal);
+        oc.font = '11px sans-serif';
+        const xLabelW = oc.measureText(xText).width + 10;
+        const xLabelX = Math.max(area.left, Math.min(mx - xLabelW / 2, area.right - xLabelW));
+        oc.fillStyle = 'rgba(79,91,213,0.85)'; oc.fillRect(xLabelX, area.bottom + 2, xLabelW, 16);
+        oc.fillStyle = '#fff'; oc.fillText(xText, xLabelX + 5, area.bottom + 14);
+        const yLabelW = oc.measureText(yText).width + 10;
+        const yLabelY = Math.max(area.top, Math.min(my - 8, area.bottom - 16));
+        oc.fillStyle = 'rgba(79,91,213,0.85)'; oc.fillRect(area.left - yLabelW - 2, yLabelY, yLabelW, 16);
+        oc.fillStyle = '#fff'; oc.fillText(yText, area.left - yLabelW + 3, yLabelY + 12);
+      }
+      oc.restore();
+    });
+    ctx.addEventListener('mouseleave', function() {
+      overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+    });
+
+  } catch (e) { console.error(`Chart ${canvasId} error:`, e); }
+}
+
+function enableTableColResize(table) {
+  if (!table) return;
+  table.style.tableLayout = 'auto';
+  const headerRows = table.querySelectorAll('thead tr');
+  if (!headerRows.length) return;
+  const lastRow = headerRows[headerRows.length - 1];
+  const ths = lastRow.querySelectorAll('th');
+  ths.forEach(th => {
+    const grip = document.createElement('div');
+    grip.className = 'col-resizer';
+    th.appendChild(grip);
+    let startX, startW;
+    grip.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startX = e.clientX;
+      startW = th.offsetWidth;
+      grip.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      const onMove = (ev) => {
+        const w = Math.max(40, startW + ev.clientX - startX);
+        th.style.width = w + 'px';
+        th.style.minWidth = w + 'px';
+      };
+      const onUp = () => {
+        grip.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      };
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+    });
+  });
+  if (headerRows.length > 1) {
+    headerRows[0].querySelectorAll('th').forEach(th => {
+      const grip = document.createElement('div');
+      grip.className = 'col-resizer';
+      th.appendChild(grip);
+      let startX, startW;
+      grip.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startX = e.clientX;
+        startW = th.offsetWidth;
+        grip.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        const onMove = (ev) => {
+          const w = Math.max(40, startW + ev.clientX - startX);
+          th.style.width = w + 'px';
+          th.style.minWidth = w + 'px';
+        };
+        const onUp = () => {
+          grip.classList.remove('active');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+        };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+    });
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  if (tab === 'compare') {
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('no-selection').style.display = 'none';
+    document.getElementById('tab-compare').style.display = 'block';
+    document.getElementById('tab-manage').style.display = 'none';
+    renderCompareList();
+  } else if (tab === 'manage') {
+    document.getElementById('content').style.display = 'none';
+    document.getElementById('no-selection').style.display = 'none';
+    document.getElementById('tab-compare').style.display = 'none';
+    document.getElementById('tab-manage').style.display = 'block';
+    loadManageList();
+  } else {
+    document.getElementById('tab-compare').style.display = 'none';
+    document.getElementById('tab-manage').style.display = 'none';
+    if (currentExp) {
+      document.getElementById('content').style.display = 'block';
+      document.getElementById('no-selection').style.display = 'none';
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+    } else {
+      document.getElementById('content').style.display = 'none';
+      document.getElementById('no-selection').style.display = 'block';
+    }
+    if (tab === 'log') loadLogTail();
+    if (tab === 'config') loadConfig();
+  }
+}
+
+async function loadLogTail() {
+  if (!currentExp) return;
+  const { group, name } = currentExp;
+  const data = await fetchJSON(`/api/log_tail?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}&n=100`);
+  const el = document.getElementById('log-content');
+  el.innerHTML = data.lines.map(l => {
+    let cls = ''; if (l.includes('ERROR')) cls = 'log-error'; else if (l.includes('WARNING')) cls = 'log-warn'; else if (l.includes('INFO')) cls = 'log-info';
+    return `<span class="${cls}">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+  }).join('\n');
+  el.scrollTop = el.scrollHeight;
+}
+
+async function loadConfig() {
+  if (!currentExp) return;
+  const { group, name } = currentExp;
+  const data = await fetchJSON(`/api/config?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}`);
+  document.getElementById('config-content').textContent = data.content || 'No config file found.';
+}
+
+function toggleCompareGroup(groupId) {
+  const cbs = document.querySelectorAll(`.compare-check[data-group="${groupId}"]`);
+  const allChecked = Array.from(cbs).every(cb => cb.checked);
+  cbs.forEach(cb => { cb.checked = !allChecked; });
+}
+
+function renderCompareList() {
+  const el = document.getElementById('compare-exp-list');
+  const groups = {};
+  experiments.forEach((e, i) => { if (!e.has_log) return; if (!groups[e.group]) groups[e.group] = []; groups[e.group].push({ exp: e, idx: i }); });
+  let html = '';
+  let gIdx = 0;
+  Object.entries(groups).forEach(([group, items]) => {
+    const gid = gIdx++;
+    html += `<div style="margin-bottom:8px;break-inside:avoid;">
+      <div style="font-size:11px;font-weight:600;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+        <button onclick="toggleCompareGroup('${gid}')" style="font-size:10px;padding:1px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;color:var(--text2);cursor:pointer;">All</button>
+        <span>${group} <span style="font-weight:400;color:var(--text2);">(${items.length})</span></span>
+      </div>`;
+    items.forEach(({ exp: e, idx: i }) => {
+      html += `<label style="display:block;padding:3px 0 3px 8px;font-size:12px;cursor:pointer;" ondblclick="openVisMonitor('${e.group}','${e.name}');event.preventDefault();">
+        <input type="checkbox" class="compare-check" data-idx="${i}" data-group="${gid}" value="${e.group}/${e.name}">
+        <span style="color:${isRunning(e) ? 'var(--green)' : 'var(--text2)'};">●</span> ${e.name}</label>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function jumpToCompareGroup(group) {
+  switchTab('compare');
+  renderCompareList();
+  const cbs = document.querySelectorAll('.compare-check');
+  cbs.forEach(cb => {
+    const val = cb.value;
+    const g = val.substring(0, val.indexOf('/'));
+    cb.checked = (g === group);
+  });
+  runCompare();
+}
+
+// ============ Feishu Config ============
+async function openFeishuModal() {
+  const modal = document.getElementById('feishu-modal');
+  modal.style.display = 'flex';
+  document.getElementById('feishu-status').textContent = 'Loading...';
+  try {
+    const r = await fetch('/api/feishu/config');
+    const d = await r.json();
+    document.getElementById('feishu-webhook-url').value = d.webhook_url || '';
+    document.getElementById('feishu-interval').value = d.interval ?? 0;
+    document.getElementById('feishu-status').textContent = d.webhook_url ? 'Enabled' : 'Not configured';
+    document.getElementById('feishu-status').style.color = d.webhook_url ? 'var(--green)' : 'var(--text2)';
+  } catch(e) {
+    document.getElementById('feishu-status').textContent = 'Failed to load config';
+    document.getElementById('feishu-status').style.color = 'var(--red)';
+  }
+}
+function closeFeishuModal() { document.getElementById('feishu-modal').style.display = 'none'; }
+async function saveFeishuConfig() {
+  const url = document.getElementById('feishu-webhook-url').value.trim();
+  const interval = parseInt(document.getElementById('feishu-interval').value) || 0;
+  const st = document.getElementById('feishu-status');
+  st.textContent = 'Saving...'; st.style.color = 'var(--text2)';
+  try {
+    const r = await fetch('/api/feishu/config', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({webhook_url:url, interval:interval})});
+    const d = await r.json();
+    if(d.ok) { st.textContent = 'Saved! Interval=' + d.interval + 's'; st.style.color = 'var(--green)'; }
+    else { st.textContent = 'Save failed'; st.style.color = 'var(--red)'; }
+  } catch(e) { st.textContent = 'Error: '+e.message; st.style.color = 'var(--red)'; }
+}
+async function testFeishu() {
+  const st = document.getElementById('feishu-status');
+  st.textContent = 'Sending test...'; st.style.color = 'var(--text2)';
+  await saveFeishuConfig();
+  try {
+    const r = await fetch('/api/feishu/test', {method:'POST'});
+    const d = await r.json();
+    if(d.ok) { st.textContent = 'Test message sent!'; st.style.color = 'var(--green)'; }
+    else { st.textContent = 'Test failed: '+(d.error||'unknown'); st.style.color = 'var(--red)'; }
+  } catch(e) { st.textContent = 'Error: '+e.message; st.style.color = 'var(--red)'; }
+}
+
+// ============ Manage Tab Functions ============
+let manageData = [];
+
+async function loadManageList() {
+  const el = document.getElementById('manage-exp-list');
+  el.innerHTML = '<p style="color:var(--text2);padding:20px;text-align:center;">Loading experiment details...</p>';
+  
+  try {
+    manageData = await fetchJSON('/api/experiment_details');
+    renderManageList();
+  } catch (e) {
+    el.innerHTML = `<p style="color:var(--red);padding:20px;text-align:center;">Error loading data: ${e.message}</p>`;
+  }
+}
+
+function refreshManageList() {
+  loadManageList();
+}
+
+function getFilteredManageData() {
+  const search = (document.getElementById('manage-search').value || '').toLowerCase();
+  const statusFilter = document.getElementById('manage-status-filter').value;
+  
+  return manageData.filter(e => {
+    if (search && !e.name.toLowerCase().includes(search) && !e.group.toLowerCase().includes(search)) return false;
+    if (statusFilter && e.status !== statusFilter) return false;
+    return true;
+  });
+}
+
+// Track collapsed groups in manage tab
+let manageCollapsedGroups = new Set(['debug']);
+let manageCollapsedInitialized = false;
+
+function toggleManageGroupCollapse(group) {
+  if (manageCollapsedGroups.has(group)) {
+    manageCollapsedGroups.delete(group);
+  } else {
+    manageCollapsedGroups.add(group);
+  }
+  renderManageList();
+}
+
+function renderManageList() {
+  const el = document.getElementById('manage-exp-list');
+  const filtered = getFilteredManageData();
+  
+  // Group by group
+  const groups = {};
+  filtered.forEach(e => {
+    if (!groups[e.group]) groups[e.group] = [];
+    groups[e.group].push(e);
+  });
+  
+  // Auto-collapse groups with last update > 1 month ago (only on first render)
+  if (!manageCollapsedInitialized) {
+    const oneMonthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000); // 30 days in ms
+    Object.entries(groups).forEach(([group, exps]) => {
+      // Find the latest last_time in this group
+      let latestTime = 0;
+      exps.forEach(e => {
+        if (e.last_time) {
+          const t = new Date(e.last_time).getTime();
+          if (t > latestTime) latestTime = t;
+        }
+      });
+      // If latest time is older than 1 month, collapse this group
+      if (latestTime > 0 && latestTime < oneMonthAgo) {
+        manageCollapsedGroups.add(group);
+      }
+    });
+    manageCollapsedInitialized = true;
+  }
+  
+  let html = '<table class="manage-table"><thead><tr><th></th><th>Name</th><th>Status</th><th>GPU</th><th>Start Time</th><th>Last Update</th><th>Progress</th><th>Elapsed</th><th>ETA</th><th>Actions</th></tr></thead><tbody>';
+  
+  // Sort groups based on selected sort option
+  const sortOption = document.getElementById('manage-sort')?.value || 'name';
+  const sortedGroups = Object.entries(groups).sort((a, b) => {
+    if (sortOption === 'name') {
+      return a[0].localeCompare(b[0]);
+    } else if (sortOption === 'last_update') {
+      const getLatestTime = (exps) => {
+        let latest = 0;
+        exps.forEach(e => {
+          if (e.last_time) {
+            const t = new Date(e.last_time).getTime();
+            if (t > latest) latest = t;
+          }
+        });
+        return latest;
+      };
+      return getLatestTime(b[1]) - getLatestTime(a[1]);
+    } else if (sortOption === 'start_time') {
+      const getLatestStart = (exps) => {
+        let latest = 0;
+        exps.forEach(e => {
+          if (e.start_time) {
+            const t = new Date(e.start_time).getTime();
+            if (t > latest) latest = t;
+          }
+        });
+        return latest;
+      };
+      return getLatestStart(b[1]) - getLatestStart(a[1]);
+    }
+    return 0;
+  });
+  
+  sortedGroups.forEach(([group, exps]) => {
+    const runningCount = exps.filter(e => e.status === 'running').length;
+    const completedCount = exps.filter(e => e.status === 'completed').length;
+    const stoppedCount = exps.filter(e => e.status === 'stopped').length;
+    const errorCount = exps.filter(e => e.status === 'error').length;
+    const isCollapsed = manageCollapsedGroups.has(group);
+    const arrow = isCollapsed ? '▶' : '▼';
+    
+    let countParts = [`${exps.length} total`];
+    if (runningCount) countParts.push(`${runningCount} running`);
+    if (completedCount) countParts.push(`${completedCount} completed`);
+    if (stoppedCount) countParts.push(`${stoppedCount} stopped`);
+    if (errorCount) countParts.push(`${errorCount} error`);
+    
+    html += `<tr onclick="toggleManageGroupCollapse('${group}');renderManageList();" style="cursor:pointer;user-select:none;">
+      <td colspan="10" style="padding:10px;background:var(--bg);border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text);">
+        <span style="font-size:10px;margin-right:6px;">${arrow}</span>
+        ${group}
+        <span class="manage-group-count">(${countParts.join(', ')})</span>
+        <a href="javascript:void(0)" onclick="event.stopPropagation();jumpToCompareGroup('${group}')" style="margin-left:6px;font-size:10px;color:var(--accent);text-decoration:none;">⇒Compare</a>
+      </td>
+    </tr>`;
+    
+    if (!isCollapsed) {
+      exps.forEach(e => {
+        const progress = e.current_iter && e.total_iter 
+          ? `${e.current_iter} / ${e.total_iter} (${Math.round(e.current_iter / e.total_iter * 100)}%)`
+          : '--';
+        const gpuInfo = e.num_gpus ? `${e.num_gpus}x ${e.gpu_model || '?'}` : '--';
+        
+        html += `<tr ondblclick="openBackupModal('${e.group}','${e.name}')" title="Double-click to view backup.py">
+          <td><input type="checkbox" class="manage-compare-check" data-group="${e.group}" data-name="${e.name}" onclick="event.stopPropagation()"></td>
+          <td class="exp-name-cell" title="${e.name}">${e.name}</td>
+          <td><span class="status-badge ${e.status}">${e.status}</span></td>
+          <td style="font-size:10px;" title="${gpuInfo}">${gpuInfo}</td>
+          <td>${e.start_time || '--'}</td>
+          <td>${e.last_time || '--'}</td>
+          <td>${progress}</td>
+          <td>${e.elapsed || '--'}</td>
+          <td>${e.eta || '--'}</td>
+          <td style="white-space:nowrap;">
+            <button onclick="event.stopPropagation();openLogModal('${e.group}','${e.name}')" style="padding:2px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--text);">Log</button>
+            <button onclick="event.stopPropagation();openEvalModal('${e.group}','${e.name}')" style="padding:2px 8px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--text);margin-left:4px;">Eval</button>
+            <button onclick="event.stopPropagation();openVisMonitor('${e.group}','${e.name}')" style="padding:2px 8px;font-size:11px;background:var(--accent);border:none;border-radius:3px;cursor:pointer;color:#fff;margin-left:4px;">Vis</button>
+          </td>
+        </tr>`;
+      });
+    }
+  });
+  
+  html += '</tbody></table>';
+  
+  if (!filtered.length) {
+    html = '<div style="padding:40px;text-align:center;color:var(--text2);font-size:12px;">No experiments match filters</div>';
+  }
+  
+  el.innerHTML = html;
+  
+  // Add filter listeners
+  document.getElementById('manage-search').oninput = renderManageList;
+  document.getElementById('manage-status-filter').onchange = renderManageList;
+}
+
+async function openBackupModal(group, name) {
+  const modal = document.getElementById('backup-modal');
+  const title = document.getElementById('backup-modal-title');
+  const content = document.getElementById('backup-content');
+  
+  title.textContent = `Loading...`;
+  content.textContent = 'Loading...';
+  modal.style.display = 'flex';
+  
+  try {
+    const data = await fetchJSON(`/api/backup_file?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}`);
+    title.textContent = data.filename || 'backup.py';
+    content.textContent = data.content;
+  } catch (e) {
+    title.textContent = 'Error';
+    content.textContent = 'Error loading file: ' + e.message;
+  }
+}
+
+function closeBackupModal() {
+  document.getElementById('backup-modal').style.display = 'none';
+}
+
+// Log Modal
+let currentLogExp = null;
+
+async function openLogModal(group, name) {
+  currentLogExp = { group, name };
+  const modal = document.getElementById('log-modal');
+  const title = document.getElementById('log-modal-title');
+  const content = document.getElementById('log-modal-content');
+  
+  title.textContent = `Log - ${name}`;
+  content.innerHTML = '<span style="color:#888;">Loading...</span>';
+  modal.style.display = 'flex';
+  
+  await loadLogContent();
+}
+
+async function loadLogContent() {
+  if (!currentLogExp) return;
+  const content = document.getElementById('log-modal-content');
+  
+  try {
+    const data = await fetchJSON(`/api/log_tail?group=${encodeURIComponent(currentLogExp.group)}&name=${encodeURIComponent(currentLogExp.name)}&n=200`);
+    content.innerHTML = data.lines.map(l => {
+      let cls = 'color:#e0e0e0;';
+      if (l.includes('ERROR')) cls = 'color:#e53e3e;';
+      else if (l.includes('WARNING')) cls = 'color:#dd6b20;';
+      else if (l.includes('INFO')) cls = 'color:#0ea5a0;';
+      else if (l.includes('DEBUG')) cls = 'color:#888;';
+      return `<span style="${cls}">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+    }).join('\n');
+    content.scrollTop = content.scrollHeight;
+  } catch (e) {
+    content.innerHTML = `<span style="color:#e53e3e;">Error loading log: ${e.message}</span>`;
+  }
+}
+
+async function refreshLogModal() {
+  await loadLogContent();
+}
+
+function closeLogModal() {
+  document.getElementById('log-modal').style.display = 'none';
+  currentLogExp = null;
+}
+
+// Eval Modal Functions
+let evalModalCharts = [];
+async function openEvalModal(group, name) {
+  const modal = document.getElementById('eval-modal');
+  document.getElementById('eval-modal-title').textContent = `Evaluation - ${name}`;
+  document.getElementById('eval-modal-metrics').innerHTML = '<span style="color:#888;">Loading...</span>';
+  document.getElementById('eval-modal-charts').innerHTML = '';
+  modal.style.display = 'flex';
+  
+  // Destroy previous charts
+  evalModalCharts.forEach(c => c.destroy());
+  evalModalCharts = [];
+  
+  try {
+    const evalData = await fetchJSON(`/api/eval_data?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}`);
+    
+    if (!evalData || evalData.length === 0) {
+      document.getElementById('eval-modal-metrics').innerHTML = '<span style="color:#888;">No evaluation data available.</span>';
+      return;
+    }
+    
+    // Helper functions (same as compare)
+    const getDataset = (ev) => {
+      if (ev.dataset) return ev.dataset;
+      if (ev.file) { const m = ev.file.match(/eval-(\w+)-/); if (m) return m[1]; }
+      return 'unknown';
+    };
+    const skipKeys = new Set(['file', 'format_text', 'dataset', 'iter']);
+    const dsColors = { 'nyu': '#4f5bd5', 'kitti': '#0ea5a0', 'scannet': '#e53e3e', 'eth3d': '#dd6b20', 'diode': '#38a169', 'ibims': '#d69e2e', 'bonn': '#9f7aea', 'tum': '#3182ce', 'sintel': '#e53e8c', 'unknown': '#48bb78' };
+    
+    // Group by dataset
+    const byDataset = {};
+    evalData.forEach(ev => {
+      const ds = getDataset(ev);
+      if (!byDataset[ds]) byDataset[ds] = [];
+      byDataset[ds].push(ev);
+    });
+    
+    // Build metrics table - same style as compare, with best and latest first
+    const higherBetterRe = /^(a[0-9]|auc|valid_ratio|fov_acc|accuracy|precision|recall|f1)/;
+    const isHigherBetter = (k) => higherBetterRe.test(k) || k.includes('auc') || k.includes('valid_ratio') || k.includes('acc');
+    
+    let metricsHtml = '';
+    Object.keys(byDataset).sort().forEach(ds => {
+      const dsData = byDataset[ds].sort((a, b) => (a.iter || 0) - (b.iter || 0));
+      const metricKeys = []; const seen = new Set();
+      dsData.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); metricKeys.push(k); } }); });
+      if (!metricKeys.length) return;
+      
+      const dsGrouped = groupMetricKeys(metricKeys);
+      const dsOrdered = [];
+      dsGrouped.forEach(([, keys]) => keys.forEach(k => dsOrdered.push(k)));
+      
+      // Find best and latest from file names (e.g., eval-xxx-best.txt, eval-xxx-latest.txt)
+      const bestRecord = dsData.find(r => r.file && r.file.includes('-best.'));
+      const latestRecord = dsData.find(r => r.file && r.file.includes('-latest.')) || dsData[dsData.length - 1];
+      
+      metricsHtml += `<div class="card" style="margin-bottom:12px;"><h4 style="display:flex;align-items:center;gap:8px;"><span style="width:10px;height:10px;border-radius:2px;background:${dsColors[ds] || '#888'};display:inline-block;"></span>${ds}</h4><div style="overflow-x:auto;">`;
+      metricsHtml += '<table class="eval-table"><thead>';
+      metricsHtml += '<tr><th rowspan="2" style="vertical-align:bottom;">Type</th><th rowspan="2" style="vertical-align:bottom;">iter</th>';
+      dsGrouped.forEach(([groupName, keys]) => {
+        metricsHtml += `<th colspan="${keys.length}" style="text-align:center;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;color:var(--accent);">${groupName}</th>`;
+      });
+      metricsHtml += '</tr><tr>';
+      dsOrdered.forEach(k => metricsHtml += `<th>${k}</th>`);
+      metricsHtml += '</tr></thead><tbody>';
+      
+      // Best row first (if exists)
+      if (bestRecord) {
+        metricsHtml += `<tr style="background:rgba(79,91,213,0.1);font-weight:500;"><td style="font-size:11px;color:var(--accent);">Best</td>`;
+        metricsHtml += `<td>${bestRecord.iter !== undefined ? bestRecord.iter : ''}</td>`;
+        dsOrdered.forEach(k => {
+          const v = bestRecord[k];
+          metricsHtml += `<td style="text-align:right;font-family:monospace;color:var(--accent);">${v !== undefined && v !== null ? v.toFixed(4) : ''}</td>`;
+        });
+        metricsHtml += '</tr>';
+      }
+      
+      // Latest row second
+      if (latestRecord) {
+        metricsHtml += `<tr style="background:rgba(14,165,160,0.1);"><td style="font-size:11px;color:var(--accent2);">Latest</td>`;
+        metricsHtml += `<td>${latestRecord.iter !== undefined ? latestRecord.iter : ''}</td>`;
+        dsOrdered.forEach(k => {
+          const v = latestRecord[k];
+          const isBest = bestRecord && bestRecord[k] !== undefined && v === bestRecord[k];
+          metricsHtml += `<td style="text-align:right;font-family:monospace;${isBest ? 'color:var(--accent);font-weight:500;' : ''}">${v !== undefined && v !== null ? v.toFixed(4) : ''}</td>`;
+        });
+        metricsHtml += '</tr>';
+      }
+      
+      // All other rows (exclude best and latest that were already shown)
+      dsData.forEach(r => {
+        if (r === bestRecord || r === latestRecord) return;
+        metricsHtml += `<tr><td style="font-size:11px;">${r.file || ''}</td>`;
+        const iv = r['iter']; metricsHtml += `<td>${iv !== undefined ? iv : ''}</td>`;
+        dsOrdered.forEach(k => {
+          const v = r[k];
+          const isBest = bestRecord && bestRecord[k] !== undefined && v === bestRecord[k];
+          metricsHtml += `<td style="text-align:right;font-family:monospace;${isBest ? 'color:var(--accent);font-weight:500;' : ''}">${v !== undefined && v !== null ? v.toFixed(4) : ''}</td>`;
+        });
+        metricsHtml += '</tr>';
+      });
+      metricsHtml += '</tbody></table></div></div>';
+    });
+    document.getElementById('eval-modal-metrics').innerHTML = metricsHtml || '<span style="color:#888;">No metrics found.</span>';
+    
+    // Create charts - same style as compare
+    const chartsContainer = document.getElementById('eval-modal-charts');
+    let chartsHtml = '';
+    let chartIdx = 0;
+    
+    Object.keys(byDataset).sort().forEach(ds => {
+      const records = byDataset[ds].filter(r => r.iter !== undefined).sort((a, b) => a.iter - b.iter);
+      if (records.length < 2) return;
+      
+      const metricKeys = []; const seen = new Set();
+      records.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); metricKeys.push(k); } }); });
+      if (!metricKeys.length) return;
+      
+      const grouped = groupMetricKeys(metricKeys);
+      chartsHtml += `<h3 style="font-size:14px;font-weight:600;color:var(--text);margin:16px 0 8px 0;">${ds}</h3>`;
+      grouped.forEach(([groupName, keys]) => {
+        chartsHtml += `<div style="margin-bottom:8px;"><span style="font-size:12px;color:var(--text2);font-weight:500;">${groupName}</span><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;margin-top:4px;">`;
+        keys.forEach(k => {
+          const cid = `eval-modal-chart-${chartIdx++}`;
+          chartsHtml += `<div class="card" style="margin-bottom:0;padding:8px;"><h4 style="font-size:11px;margin-bottom:4px;">${k}</h4><div style="height:150px;"><canvas id="${cid}"></canvas></div></div>`;
+        });
+        chartsHtml += '</div></div>';
+      });
+    });
+    chartsContainer.innerHTML = chartsHtml;
+    
+    // Draw charts
+    chartIdx = 0;
+    Object.keys(byDataset).sort().forEach(ds => {
+      const records = byDataset[ds].filter(r => r.iter !== undefined).sort((a, b) => a.iter - b.iter);
+      if (records.length < 2) return;
+      
+      const metricKeys = []; const seen = new Set();
+      records.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); metricKeys.push(k); } }); });
+      if (!metricKeys.length) return;
+      
+      const grouped = groupMetricKeys(metricKeys);
+      grouped.forEach(([, keys]) => {
+        keys.forEach(k => {
+          const cid = `eval-modal-chart-${chartIdx++}`;
+          const sorted = records.filter(r => r[k] != null).sort((a, b) => a.iter - b.iter);
+          if (!sorted.length) return;
+          
+          const ctx = document.getElementById(cid);
+          if (!ctx) return;
+          const chart = new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+              datasets: [{
+                label: k,
+                data: sorted.map(r => ({ x: r.iter, y: r[k] })),
+                borderColor: COLORS[0] + 'aa',
+                borderWidth: 1.5,
+                pointRadius: 2,
+                fill: false,
+                spanGaps: true
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { type: 'linear', display: true, ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#3a3f52' }, grid: { color: '#d0d4de' } },
+                y: { display: true, ticks: { maxTicksLimit: 10, font: { size: 10 }, color: '#3a3f52' }, grid: { color: '#d0d4de' } }
+              }
+            }
+          });
+          evalModalCharts.push(chart);
+        });
+      });
+    });
+    
+  } catch (e) {
+    document.getElementById('eval-modal-metrics').innerHTML = `<span style="color:#e53e3e;">Error: ${e.message}</span>`;
+  }
+}
+
+function closeEvalModal() {
+  document.getElementById('eval-modal').style.display = 'none';
+  evalModalCharts.forEach(c => c.destroy());
+  evalModalCharts = [];
+}
+
+// Backup Compare Functions - VSCode style diff
+async function compareSelectedBackups() {
+  const checks = document.querySelectorAll('.manage-compare-check:checked');
+  if (checks.length !== 2) {
+    alert('Please select exactly 2 experiments to compare config');
+    return;
+  }
+  
+  const exp1 = { group: checks[0].dataset.group, name: checks[0].dataset.name };
+  const exp2 = { group: checks[1].dataset.group, name: checks[1].dataset.name };
+  
+  const modal = document.getElementById('backup-compare-modal');
+  document.getElementById('backup-compare-name1').textContent = exp1.name;
+  document.getElementById('backup-compare-name2').textContent = exp2.name;
+  document.getElementById('backup-compare-content1').innerHTML = '<div style="padding:12px;color:#888;">Loading...</div>';
+  document.getElementById('backup-compare-content2').innerHTML = '<div style="padding:12px;color:#888;">Loading...</div>';
+  document.getElementById('diff-summary').textContent = '';
+  modal.style.display = 'flex';
+  
+  try {
+    const [data1, data2] = await Promise.all([
+      fetchJSON(`/api/backup_file?group=${encodeURIComponent(exp1.group)}&name=${encodeURIComponent(exp1.name)}`),
+      fetchJSON(`/api/backup_file?group=${encodeURIComponent(exp2.group)}&name=${encodeURIComponent(exp2.name)}`)
+    ]);
+    
+    const lines1 = data1.content.split('\n');
+    const lines2 = data2.content.split('\n');
+    
+    // Compute LCS-based diff
+    const diff = computeDiff(lines1, lines2);
+    
+    // Render both sides
+    const { html1, html2, stats } = renderDiff(diff, lines1, lines2);
+    
+    document.getElementById('backup-compare-content1').innerHTML = html1;
+    document.getElementById('backup-compare-content2').innerHTML = html2;
+    document.getElementById('diff-summary').textContent = `${stats.changed} changed, ${stats.added} added, ${stats.removed} removed`;
+    
+    // Sync scrolling
+    const content1 = document.getElementById('backup-compare-content1');
+    const content2 = document.getElementById('backup-compare-content2');
+    let syncing = false;
+    
+    content1.onscroll = () => {
+      if (syncing) return;
+      syncing = true;
+      content2.scrollTop = content1.scrollTop;
+      content2.scrollLeft = content1.scrollLeft;
+      syncing = false;
+    };
+    content2.onscroll = () => {
+      if (syncing) return;
+      syncing = true;
+      content1.scrollTop = content2.scrollTop;
+      content1.scrollLeft = content2.scrollLeft;
+      syncing = false;
+    };
+    
+  } catch (e) {
+    document.getElementById('backup-compare-content1').innerHTML = `<div style="padding:12px;color:#e53e3e;">Error: ${e.message}</div>`;
+    document.getElementById('backup-compare-content2').innerHTML = `<div style="padding:12px;color:#e53e3e;">Error: ${e.message}</div>`;
+  }
+}
+
+// Compute diff using simplified LCS approach
+function computeDiff(lines1, lines2) {
+  const result = [];
+  let i = 0, j = 0;
+  
+  // Build a map of line content to indices for lines2
+  const line2Map = new Map();
+  lines2.forEach((line, idx) => {
+    if (!line2Map.has(line)) line2Map.set(line, []);
+    line2Map.get(line).push(idx);
+  });
+  
+  while (i < lines1.length || j < lines2.length) {
+    if (i >= lines1.length) {
+      // Remaining lines in file2 are additions
+      result.push({ type: 'add', line2: j });
+      j++;
+    } else if (j >= lines2.length) {
+      // Remaining lines in file1 are deletions
+      result.push({ type: 'del', line1: i });
+      i++;
+    } else if (lines1[i] === lines2[j]) {
+      // Lines match
+      result.push({ type: 'same', line1: i, line2: j });
+      i++;
+      j++;
+    } else {
+      // Check if current line1 exists later in lines2
+      const futureInLines2 = line2Map.get(lines1[i])?.find(idx => idx > j);
+      // Check if current line2 exists later in lines1
+      const futureInLines1 = lines1.indexOf(lines2[j], i + 1);
+      
+      if (futureInLines2 !== undefined && (futureInLines1 === -1 || futureInLines2 - j <= futureInLines1 - i)) {
+        // Insert lines from file2 until we reach the match
+        result.push({ type: 'add', line2: j });
+        j++;
+      } else if (futureInLines1 !== -1) {
+        // Delete lines from file1 until we reach the match
+        result.push({ type: 'del', line1: i });
+        i++;
+      } else {
+        // Lines are different (modification)
+        result.push({ type: 'mod', line1: i, line2: j });
+        i++;
+        j++;
+      }
+    }
+  }
+  
+  return result;
+}
+
+// Render diff with line numbers and highlighting
+function renderDiff(diff, lines1, lines2) {
+  let html1 = '', html2 = '';
+  let stats = { changed: 0, added: 0, removed: 0 };
+  
+  const escape = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  
+  diff.forEach(d => {
+    if (d.type === 'same') {
+      const lineNum1 = d.line1 + 1;
+      const lineNum2 = d.line2 + 1;
+      const code = escape(lines1[d.line1]);
+      html1 += `<div class="diff-line"><span class="line-num">${lineNum1}</span><span class="line-code">${code}</span></div>`;
+      html2 += `<div class="diff-line"><span class="line-num">${lineNum2}</span><span class="line-code">${code}</span></div>`;
+    } else if (d.type === 'del') {
+      const lineNum = d.line1 + 1;
+      const code = escape(lines1[d.line1]);
+      html1 += `<div class="diff-line diff-del"><span class="line-num">${lineNum}</span><span class="line-code">${code}</span></div>`;
+      html2 += `<div class="diff-line"><span class="line-num"></span><span class="line-code"></span></div>`;
+      stats.removed++;
+    } else if (d.type === 'add') {
+      const lineNum = d.line2 + 1;
+      const code = escape(lines2[d.line2]);
+      html1 += `<div class="diff-line"><span class="line-num"></span><span class="line-code"></span></div>`;
+      html2 += `<div class="diff-line diff-add"><span class="line-num">${lineNum}</span><span class="line-code">${code}</span></div>`;
+      stats.added++;
+    } else if (d.type === 'mod') {
+      const lineNum1 = d.line1 + 1;
+      const lineNum2 = d.line2 + 1;
+      const code1 = escape(lines1[d.line1]);
+      const code2 = escape(lines2[d.line2]);
+      html1 += `<div class="diff-line diff-mod"><span class="line-num">${lineNum1}</span><span class="line-code">${code1}</span></div>`;
+      html2 += `<div class="diff-line diff-mod"><span class="line-num">${lineNum2}</span><span class="line-code">${code2}</span></div>`;
+      stats.changed++;
+    }
+  });
+  
+  return { html1, html2, stats };
+}
+
+function closeBackupCompareModal() {
+  document.getElementById('backup-compare-modal').style.display = 'none';
+}
+
+// Close modal on background click
+document.addEventListener('click', (e) => {
+  const backupModal = document.getElementById('backup-modal');
+  const logModal = document.getElementById('log-modal');
+  const evalModal = document.getElementById('eval-modal');
+  const compareModal = document.getElementById('backup-compare-modal');
+  if (e.target === backupModal) closeBackupModal();
+  if (e.target === logModal) closeLogModal();
+  if (e.target === evalModal) closeEvalModal();
+  if (e.target === compareModal) closeBackupCompareModal();
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeBackupModal();
+    closeLogModal();
+    closeEvalModal();
+    closeBackupCompareModal();
+  }
+});
+
+function openVisMonitor(group, name) {
+  const url = `/vis?group=${encodeURIComponent(group)}&name=${encodeURIComponent(name)}`;
+  window.open(url, '_blank');
+}
+
+// ============ Analysis Report ============
+let _reportMarkdown = '';
+let _reportTitle = '';
+let _reportExpList = [];
+
+function openReportDialog() {
+  const checks = document.querySelectorAll('.compare-check:checked');
+  if (checks.length < 2) { alert('Please select at least 2 experiments'); return; }
+  _reportExpList = Array.from(checks).map(cb => {
+    const idx = cb.value.indexOf('/');
+    return { group: cb.value.substring(0, idx), name: cb.value.substring(idx + 1), key: cb.value };
+  });
+  const sel = document.getElementById('baseline-select');
+  sel.innerHTML = _reportExpList.map((e, i) => `<option value="${i}">${e.name}</option>`).join('');
+  const listEl = document.getElementById('baseline-exp-list');
+  listEl.innerHTML = '<b>Experiments to compare:</b><br>' + _reportExpList.map((e, i) => `${i+1}. ${e.name}`).join('<br>');
+  document.getElementById('baseline-modal').style.display = 'flex';
+}
+
+async function generateReport() {
+  const baseIdx = parseInt(document.getElementById('baseline-select').value) || 0;
+  document.getElementById('baseline-modal').style.display = 'none';
+  const modal = document.getElementById('report-modal');
+  modal.style.display = 'flex';
+  document.getElementById('report-content').innerHTML = '<p style="color:var(--text2);text-align:center;padding:40px;">Generating report...</p>';
+  try {
+    const res = await fetch('/api/analysis_report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ experiments: _reportExpList.map(e => ({group: e.group, name: e.name})), baseline_index: baseIdx })
+    });
+    const data = await res.json();
+    if (data.error) { document.getElementById('report-content').innerHTML = `<p style="color:var(--red);">Error: ${data.error}</p>`; return; }
+    _reportMarkdown = data.markdown;
+    _reportTitle = data.title;
+    document.getElementById('report-modal-title').textContent = data.title;
+    document.getElementById('report-content').innerHTML = renderMarkdown(data.markdown);
+  } catch(e) {
+    document.getElementById('report-content').innerHTML = `<p style="color:var(--red);">Error: ${e.message}</p>`;
+  }
+}
+
+function renderMarkdown(md) {
+  let html = md
+    .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^### (.+)$/gm, '<h3 style="margin-top:16px;font-size:14px;font-weight:600;border-bottom:1px solid var(--border);padding-bottom:4px;">$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2 style="margin-top:24px;font-size:16px;font-weight:700;color:var(--accent);border-bottom:2px solid var(--border);padding-bottom:6px;">$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1 style="font-size:20px;font-weight:700;">$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code style="background:var(--bg3);padding:1px 4px;border-radius:3px;font-size:11px;">$1</code>');
+
+  // Parse tables
+  const lines = html.split('\n');
+  let out = '', inTable = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const cells = line.split('|').slice(1, -1).map(c => c.trim());
+      if (cells.every(c => /^[-:]+$/.test(c))) continue;
+      if (!inTable) { out += '<table class="eval-table" style="margin:8px 0;"><tbody>'; inTable = true; }
+      const isHeader = i + 1 < lines.length && lines[i+1].trim().startsWith('|') && lines[i+1].includes('---');
+      const tag = isHeader ? 'th' : 'td';
+      out += '<tr>' + cells.map(c => `<${tag} style="padding:4px 8px;font-size:12px;">${c}</${tag}>`).join('') + '</tr>';
+    } else {
+      if (inTable) { out += '</tbody></table>'; inTable = false; }
+      if (line.startsWith('- ')) {
+        out += `<div style="padding:2px 0 2px 16px;font-size:12px;">&bull; ${line.slice(2)}</div>`;
+      } else if (line === '') {
+        out += '<div style="height:6px;"></div>';
+      } else {
+        out += `<div>${line}</div>`;
+      }
+    }
+  }
+  if (inTable) out += '</tbody></table>';
+  return out;
+}
+
+function copyReport() {
+  navigator.clipboard.writeText(_reportMarkdown).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function downloadReport() {
+  const blob = new Blob([_reportMarkdown], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (_reportTitle || 'report') + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function openVisCompare() {
+  const checks = document.querySelectorAll('.compare-check:checked');
+  if (checks.length === 0) {
+    alert('Please select experiments to visualize');
+    return;
+  }
+  const exps = Array.from(checks).map(cb => cb.value);
+  const url = `/vis?compare=${encodeURIComponent(exps.join(','))}`;
+  window.open(url, '_blank');
+}
+
+function clearCompareSelection() {
+  document.querySelectorAll('.compare-check:checked').forEach(cb => { cb.checked = false; });
+}
+
+async function runCompare() {
+  const checks = document.querySelectorAll('.compare-check:checked');
+  if (checks.length === 0) return;
+  const showLoss = document.getElementById('cmp-show-loss').checked;
+  const showEvalCharts = document.getElementById('cmp-show-eval-charts').checked;
+  const container = document.getElementById('compare-results');
+  container.innerHTML = '<p style="color:var(--text2);">Loading comparison data...</p>';
+  const cmpTimingMap = {};
+  const expList = Array.from(checks).map(cb => {
+    const idx = cb.value.indexOf('/');
+    return { group: cb.value.substring(0, idx), name: cb.value.substring(idx + 1) };
+  });
+  const batchRes = await fetch('/api/compare_batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ experiments: expList, include_train: showLoss, sample: 1000 })
+  });
+  if (!batchRes.ok) throw new Error(`HTTP ${batchRes.status}`);
+  const batchData = await batchRes.json();
+  const items = batchData.map(d => {
+    const key = d.key;
+    allTrainData[key] = d.train;
+    allEvalData[key] = d.eval;
+    if (d.train && d.train.timing && d.train.timing.total) cmpTimingMap[key] = d.train.timing.total;
+    return { key, group: d.group, name: d.name };
+  });
+  // Cleanup old compare charts
+  Object.keys(charts).forEach(k => { if (k.startsWith('chart-cmp-')) { charts[k].destroy(); delete charts[k]; } });
+
+  let html = '';
+  if (showLoss) {
+    const compKeys = ['lcl', 'glb', 'cm'];
+    html += '<div class="grid grid-2" style="margin-top:16px;">';
+    html += '<div class="card"><h4>Loss Comparison</h4><div class="chart-container" style="height:350px;"><canvas id="chart-cmp-loss"></canvas></div></div>';
+    html += '<div class="card"><h4>lcl Loss</h4><div class="chart-container" style="height:350px;"><canvas id="chart-cmp-lcl"></canvas></div></div></div>';
+    html += '<div class="grid grid-2" style="margin-top:16px;">';
+    html += '<div class="card"><h4>glb Loss</h4><div class="chart-container" style="height:350px;"><canvas id="chart-cmp-glb"></canvas></div></div>';
+    html += '<div class="card"><h4>cm Loss</h4><div class="chart-container" style="height:350px;"><canvas id="chart-cmp-cm"></canvas></div></div></div>';
+  }
+
+  html += '<div class="card" style="margin-top:16px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><h4>Latest Eval Comparison</h4><label style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:4px;">iter:<input type="number" id="cmp-latest-iter" placeholder="latest" style="width:80px;padding:2px 6px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);" onchange="refreshCmpLatestByIter()"></label><button id="cmp-sort-latest-btn" onclick="toggleCmpEvalSort(\'latest\')" style="padding:2px 10px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--text2);">Sort by Dataset</button></div><div id="cmp-eval-latest" style="overflow-x:auto;"></div></div>';
+  html += '<div class="card" style="margin-top:16px;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><h4>Best Eval Comparison</h4><button id="cmp-sort-best-btn" onclick="toggleCmpEvalSort(\'best\')" style="padding:2px 10px;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--text2);">Sort by Dataset</button></div><div id="cmp-eval-best" style="overflow-x:auto;"></div></div>';
+
+  if (showEvalCharts) {
+    html += '<div id="cmp-eval-charts"></div>';
+  }
+
+  container.innerHTML = html;
+
+  // --- Loss charts ---
+  if (showLoss) {
+    const compKeys = ['lcl', 'glb', 'cm'];
+    const expColors = {};
+    const lossDatasets = [];
+    items.forEach(({ key }, i) => {
+      const trainRes = allTrainData[key];
+      if (!trainRes || !trainRes.records.length) return;
+      const { records } = trainRes;
+      const shortName = key.split('/').slice(-2).join('/');
+      const color = COLORS[i % COLORS.length];
+      expColors[key] = color;
+      lossDatasets.push({ label: shortName, data: records.map(r => ({ x: r.iter, y: r.loss })), borderColor: color + 'aa', borderWidth: 1.5, pointRadius: 0, fill: false, spanGaps: true });
+    });
+    const linearXScale = { scales: { x: { type: 'linear', title: { display: true, text: 'iter', color: '#5f6680' } } } };
+    if (lossDatasets.length) updateChart('chart-cmp-loss', { datasets: lossDatasets }, linearXScale);
+    compKeys.forEach(ck => {
+      const ds = [];
+      items.forEach(({ key }) => {
+        const trainRes = allTrainData[key];
+        if (!trainRes || !trainRes.records.length) return;
+        const { records } = trainRes;
+        if (!records.some(r => r[ck] !== undefined && r[ck] !== null)) return;
+        const shortName = key.split('/').slice(-2).join('/');
+        ds.push({ label: shortName, data: records.map(r => ({ x: r.iter, y: r[ck] })), borderColor: expColors[key] + 'aa', borderWidth: 1.5, pointRadius: 0, fill: false, spanGaps: true });
+      });
+      if (ds.length) updateChart('chart-cmp-' + ck, { datasets: ds }, linearXScale);
+    });
+  }
+
+  // --- Eval helpers ---
+  function getDatasetFromEval(ev) {
+    if (ev.dataset) return ev.dataset;
+    if (ev.file) { const m = ev.file.match(/eval-(\w+)-/); if (m) return m[1]; }
+    return 'unknown';
+  }
+
+  function findEvalsByType(evalArr, type) {
+    if (!evalArr || !evalArr.length) return [];
+    return evalArr.filter(e => e.file && e.file.includes('-' + type + '.'));
+  }
+
+  const higherBetterRe = /^(a[0-9]|auc|valid_ratio|fov_acc|accuracy|precision|recall|f1)/;
+  function isHigherBetter(k) {
+    if (higherBetterRe.test(k)) return true;
+    if (k.includes('auc') || k.includes('valid_ratio') || k.includes('acc')) return true;
+    return false;
+  }
+
+  function buildCmpEvalTable(rows) {
+    if (!rows.length) return '<p style="color:var(--text2);font-size:13px;">No data</p>';
+    const skipCmp = new Set(['name', 'file', 'format_text', 'dataset', 'iter', '_dataset']);
+    const cmpMetricKeys = []; const cmpSeen = new Set();
+    rows.forEach(r => { Object.keys(r).forEach(k => { if (!skipCmp.has(k) && !cmpSeen.has(k) && typeof r[k] === 'number') { cmpSeen.add(k); cmpMetricKeys.push(k); } }); });
+    const cmpGrouped = groupMetricKeys(cmpMetricKeys);
+    const cmpOrdered = [];
+    cmpGrouped.forEach(([, keys]) => keys.forEach(k => cmpOrdered.push(k)));
+
+    const datasets = [...new Set(rows.map(r => r._dataset || ''))];
+    const dsColors = ['#e53e3e','#3182ce','#38a169','#dd6b20','#9f7aea','#d69e2e','#e53e8c','#0ea5a0'];
+    const dsColorMap = {}; datasets.forEach((ds, i) => { dsColorMap[ds] = dsColors[i % dsColors.length]; });
+    const bestByDs = {};
+    if (rows.length > 1) {
+      datasets.forEach(ds => {
+        const dsRows = rows.filter(r => (r._dataset || '') === ds);
+        if (dsRows.length < 2) return;
+        bestByDs[ds] = {};
+        cmpOrdered.forEach(k => {
+          const hb = isHigherBetter(k);
+          let best = null;
+          dsRows.forEach(r => { if (typeof r[k] === 'number') { if (best === null || (hb ? r[k] > best : r[k] < best)) best = r[k]; } });
+          if (best !== null) bestByDs[ds][k] = best;
+        });
+      });
+    }
+
+    let h = '<table class="eval-table cmp-eval-table"><thead>';
+    h += '<tr><th rowspan="2" class="cmp-sticky-col cmp-sticky-col-1" style="vertical-align:bottom;">Experiment</th><th rowspan="2" class="cmp-sticky-col cmp-sticky-col-2" style="vertical-align:bottom;">Dataset</th><th rowspan="2" style="vertical-align:bottom;">iter</th>';
+    cmpGrouped.forEach(([groupName, keys]) => {
+      h += `<th colspan="${keys.length}" style="text-align:center;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;color:var(--accent);">${groupName}</th>`;
+    });
+    h += '<th rowspan="2" style="vertical-align:bottom;">Total Time</th>';
+    h += '</tr><tr>';
+    cmpOrdered.forEach(k => h += `<th>${k}</th>`);
+    h += '</tr></thead><tbody>';
+    rows.forEach(r => {
+      const expName = r.name.split('/').pop();
+      const expParts = r.name.split('/');
+      const expGroup = expParts.slice(0, -1).join('/');
+      const expNameOnly = expParts[expParts.length - 1];
+      h += `<tr><td title="${r.name}" class="cmp-exp-name cmp-sticky-col cmp-sticky-col-1" ondblclick="openVisMonitor('${expGroup}','${expNameOnly}')">${expName}</td>`;
+      h += `<td class="cmp-sticky-col cmp-sticky-col-2" style="font-size:11px;">${r._dataset || ''}</td>`;
+      const iv = r['iter']; h += `<td>${iv !== undefined ? iv : ''}</td>`;
+      cmpOrdered.forEach(k => {
+        const v = r[k];
+        const ds = r._dataset || '';
+        const dsBest = bestByDs[ds];
+        const isBest = dsBest && typeof v === 'number' && dsBest[k] !== undefined && v === dsBest[k];
+        const style = isBest ? ` style="color:${dsColorMap[ds]};font-weight:700;"` : '';
+        h += `<td${style}>${v !== undefined ? (typeof v === 'number' ? v.toFixed(5) : v) : ''}</td>`;
+      });
+      h += `<td style="font-size:11px;white-space:nowrap;">${cmpTimingMap[r.name] || '--'}</td>`;
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    return h;
+  }
+
+  function renderCmpEvalTables() {
+    const lr = window._cmpEvalSorted.latest
+      ? [...window._cmpLatestRows].sort((a, b) => (a._dataset || '').localeCompare(b._dataset || '') || a.name.localeCompare(b.name))
+      : window._cmpLatestRows;
+    const br = window._cmpEvalSorted.best
+      ? [...window._cmpBestRows].sort((a, b) => (a._dataset || '').localeCompare(b._dataset || '') || a.name.localeCompare(b.name))
+      : window._cmpBestRows;
+    document.getElementById('cmp-eval-latest').innerHTML = buildCmpEvalTable(lr);
+    document.getElementById('cmp-eval-best').innerHTML = buildCmpEvalTable(br);
+    document.querySelectorAll('#cmp-eval-latest .eval-table, #cmp-eval-best .eval-table').forEach(t => enableTableColResize(t));
+    document.querySelectorAll('.cmp-eval-table').forEach(tbl => {
+      const firstCol = tbl.querySelector('th.cmp-sticky-col-1');
+      if (firstCol) tbl.style.setProperty('--sticky-col1-w', firstCol.offsetWidth + 'px');
+    });
+    const lBtn = document.getElementById('cmp-sort-latest-btn');
+    const bBtn = document.getElementById('cmp-sort-best-btn');
+    if (lBtn) { lBtn.style.background = window._cmpEvalSorted.latest ? 'var(--accent)' : 'var(--bg3)'; lBtn.style.color = window._cmpEvalSorted.latest ? '#fff' : 'var(--text2)'; }
+    if (bBtn) { bBtn.style.background = window._cmpEvalSorted.best ? 'var(--accent)' : 'var(--bg3)'; bBtn.style.color = window._cmpEvalSorted.best ? '#fff' : 'var(--text2)'; }
+  }
+  window.toggleCmpEvalSort = function(type) {
+    window._cmpEvalSorted[type] = !window._cmpEvalSorted[type];
+    renderCmpEvalTables();
+  };
+
+  // --- Eval tables ---
+  window._cmpItems = items;
+  window._cmpLatestRows = []; window._cmpBestRows = [];
+  window._cmpEvalSorted = { latest: false, best: false };
+  window._buildCmpLatestRows = function(targetIter) {
+    const rows = [];
+    window._cmpItems.forEach(({ key }) => {
+      const evalRes = allEvalData[key];
+      if (!evalRes || !evalRes.length) return;
+      if (targetIter !== undefined && targetIter !== null && targetIter !== '') {
+        const ti = Number(targetIter);
+        const datasets = new Set();
+        evalRes.forEach(ev => { const ds = getDatasetFromEval(ev); datasets.add(ds); });
+        datasets.forEach(ds => {
+          const dsRecords = evalRes.filter(ev => getDatasetFromEval(ev) === ds && ev.iter !== undefined);
+          if (!dsRecords.length) return;
+          let closest = dsRecords[0];
+          dsRecords.forEach(r => { if (Math.abs(r.iter - ti) < Math.abs(closest.iter - ti)) closest = r; });
+          rows.push({ name: key, _dataset: ds, ...closest });
+        });
+      } else {
+        findEvalsByType(evalRes, 'latest').forEach(ev => {
+          rows.push({ name: key, _dataset: getDatasetFromEval(ev), ...ev });
+        });
+      }
+    });
+    return rows;
+  };
+  window._cmpLatestRows = window._buildCmpLatestRows(null);
+  items.forEach(({ key }) => {
+    const evalRes = allEvalData[key];
+    findEvalsByType(evalRes, 'best').forEach(ev => {
+      window._cmpBestRows.push({ name: key, _dataset: getDatasetFromEval(ev), ...ev });
+    });
+  });
+  window.refreshCmpLatestByIter = function() {
+    const iterInput = document.getElementById('cmp-latest-iter');
+    const val = iterInput ? iterInput.value.trim() : '';
+    window._cmpLatestRows = window._buildCmpLatestRows(val || null);
+    renderCmpEvalTables();
+  };
+  renderCmpEvalTables();
+
+  // --- Eval metric charts ---
+  if (showEvalCharts) {
+    const skipKeys = new Set(['file', 'format_text', 'dataset', 'iter']);
+    // Collect per-experiment iter-series data, grouped by dataset
+    const expEvalByDs = {};
+    items.forEach(({ key }, i) => {
+      const evalRes = allEvalData[key];
+      if (!evalRes) return;
+      evalRes.forEach(ev => {
+        if (ev.iter === undefined) return;
+        const ds = getDatasetFromEval(ev);
+        if (!expEvalByDs[ds]) expEvalByDs[ds] = {};
+        if (!expEvalByDs[ds][key]) expEvalByDs[ds][key] = { idx: i, records: [] };
+        expEvalByDs[ds][key].records.push(ev);
+      });
+    });
+    // For each dataset, find all metric keys
+    let chartsHtml = '';
+    let chartIdx = 0;
+    Object.keys(expEvalByDs).sort().forEach(ds => {
+      const expMap = expEvalByDs[ds];
+      const metricKeys = []; const seen = new Set();
+      Object.values(expMap).forEach(({ records }) => {
+        records.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); metricKeys.push(k); } }); });
+      });
+      if (!metricKeys.length) return;
+      const grouped = groupMetricKeys(metricKeys);
+      chartsHtml += `<h3 style="font-size:14px;font-weight:600;color:var(--text);margin:20px 0 8px 0;">${ds}</h3>`;
+      grouped.forEach(([groupName, keys]) => {
+        chartsHtml += `<div style="margin-bottom:12px;"><span style="font-size:12px;color:var(--text2);font-weight:500;padding-left:4px;">${groupName}</span><div style="margin-top:4px;">`;
+        keys.forEach(k => {
+          const cid = `chart-cmp-eval-${chartIdx++}`;
+          chartsHtml += `<div class="card" style="margin-bottom:12px;"><h4 style="font-size:12px;">${k}</h4><div style="height:400px;"><canvas id="${cid}"></canvas></div></div>`;
+        });
+        chartsHtml += '</div></div>';
+      });
+    });
+    document.getElementById('cmp-eval-charts').innerHTML = chartsHtml;
+
+    // Draw charts
+    chartIdx = 0;
+    Object.keys(expEvalByDs).sort().forEach(ds => {
+      const expMap = expEvalByDs[ds];
+      const metricKeys = []; const seen = new Set();
+      Object.values(expMap).forEach(({ records }) => {
+        records.forEach(r => { Object.keys(r).forEach(k => { if (!skipKeys.has(k) && !seen.has(k) && typeof r[k] === 'number') { seen.add(k); metricKeys.push(k); } }); });
+      });
+      if (!metricKeys.length) return;
+      const grouped = groupMetricKeys(metricKeys);
+      grouped.forEach(([, keys]) => {
+        keys.forEach(k => {
+          const cid = `chart-cmp-eval-${chartIdx++}`;
+          const datasets = [];
+          Object.entries(expMap).forEach(([key, { idx, records }]) => {
+            const sorted = records.filter(r => r[k] != null).sort((a, b) => a.iter - b.iter);
+            if (!sorted.length) return;
+            const shortName = key.split('/').slice(-2).join('/');
+            datasets.push({
+              label: shortName, data: sorted.map(r => ({ x: r.iter, y: r[k] })),
+              borderColor: COLORS[idx % COLORS.length] + 'aa', borderWidth: 1.5, pointRadius: 2, fill: false, spanGaps: true,
+            });
+          });
+          if (datasets.length) {
+            updateChart(cid, { datasets }, { _small: true, scales: {
+              x: { type: 'linear', display: true, ticks: { maxTicksLimit: 8, font: { size: 10 } } },
+              y: { display: true, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
+            } });
+          }
+        });
+      });
+    });
+  }
+}
+
+async function refreshAll() {
+  try {
+    refreshCount++;
+    if (refreshCount % 10 === 0) await loadExperiments();
+    if (currentExp) await loadExpData();
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab && activeTab.dataset.tab === 'log') await loadLogTail();
+  } catch (e) { console.error('refreshAll error:', e); }
+}
+
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  const interval = parseInt(document.getElementById('refresh-interval').value);
+  if (interval > 0) refreshTimer = setInterval(refreshAll, interval);
+}
+
+document.getElementById('refresh-interval').addEventListener('change', startAutoRefresh);
+loadExperiments().then(() => {
+  switchTab('manage');
+  // init sidebar resizer
+  const sidebar = document.querySelector('.sidebar');
+  const resizer = document.getElementById('sidebar-resizer');
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+  resizer.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = sidebar.getBoundingClientRect().width;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+    let newWidth = startWidth + dx;
+    newWidth = Math.max(260, Math.min(640, newWidth));
+    sidebar.style.width = newWidth + 'px';
+    sidebar.style.minWidth = newWidth + 'px';
+  });
+  window.addEventListener('mouseup', () => {
+    if (!isResizing) return;
+    isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    try {
+      const w = sidebar.getBoundingClientRect().width;
+      localStorage.setItem('monitor_sidebar_width', Math.round(w));
+    } catch (e) {}
+  });
+  startAutoRefresh();
+});
+</script>
+</body>
+</html>

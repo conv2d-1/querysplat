@@ -1,0 +1,26 @@
+# Validation / test manifest: HaSim-Benchmark Running only.
+# Matches sampling in vis/hasim_benchmark.yaml (Running tier).
+
+datasets:
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/Hasim_benchmark/Running/mf_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/nasTeam2/AI/datasets/TMD
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hasim_benchmark_running
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: "first:5"
+    prob: 1.0
+    type: hAlgorithm.datasets_4d.hasim_track_dataset.HaSimTrackDataset
+    skip_static_threshold: 0.02
+    static_traj_ratio: 1.0
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0

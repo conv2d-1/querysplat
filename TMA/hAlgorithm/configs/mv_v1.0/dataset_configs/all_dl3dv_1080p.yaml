@@ -1,0 +1,23 @@
+datasets:
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/DL3DV-10K/filter/train_mf_1080p_train_part1.json,
+      /mnt/netdata/Team/AI/datasets/TMD/DL3DV-10K/filter/train_mf_1080p_train_part2.json,
+      /mnt/netdata/Team/AI/datasets/TMD/DL3DV-10K/filter/train_mf_1080p_train_part3.json,
+      /mnt/netdata/Team/AI/datasets/TMD/DL3DV-10K/filter/train_mf_1080p_train_part4.json,
+      /mnt/netdata/Team/AI/datasets/TMD/DL3DV-10K/filter/train_mf_1080p_train_part5.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: dl3dv
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    lidar_name: sfm_depth
+    mf_to_sf: True
+    prob: 1.0

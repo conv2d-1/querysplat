@@ -1,0 +1,201 @@
+datasets:
+  # name hablendeder
+  # mf_data_scene 70
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1527
+  # mf_data_scene_frames max 2184, min 208, mean 1067, median 1125
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/HaBlender/train_mf_v3_random_trajectory_large_noise.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 0.1
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 50
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    hdf5: false
+    rbg_name: colors
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+  
+  # name infinigen
+  # mf_data_scene 2829
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 14325
+  # mf_data_scene_frames max 301, min 51, mean 142, median 119
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/random_traj_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/random_traj_noise_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v1_random_traj_20250529_part0.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250529.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v1_random_traj_20250529_part1.json,
+
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part1.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part2.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250612_part3.json,
+
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part1.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part2.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/normal/infinigen_scenes_v2_random_traj_20250626_part3.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 30
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+  
+  # name infinigen
+  # mf_data_scene 3669
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3669
+  # mf_data_scene_frames max 301, min 51, mean 140, median 117
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/jsons_filter20/iphone_v1_total/20250804_095259_scene_001258.json
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen_iphone
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 0.5
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+  
+  # name hablendeder_objs
+  # mf_data_scene 18960
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 18960
+  # mf_data_scene_frames max 216, min 88, mean 128, median 108
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v1_to_v2_total/20250710_052124_scene_008653.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250711_083257_scene_004919.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250714_060009_scene_005388.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250721_065454_scene_007636.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250728_075217_scene_005698.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250804_050530_scene_002941.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/jsons/objaverse_iphone_v2_total/20250811_122346_scene_001052_cut10.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+  
+  # name infinigen_objs
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle/jsons/iphone/20250815_111643_scene133.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle_1k/jsons/iphone/20250818_035144_scene212.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20250818_042021_scene500.json,
+      # /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Google_Scanned_Objects/jsons/iphone/20250818_042032_scene1431.json, # error
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_Assert_angle_1k/jsons/iphone/20250825_031910_scene292.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen_OmniObject3D_angle/jsons/iphone/20250825_031821_scene185.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Google_Scanned_Objects/jsons/iphone/20250825_041151_scene1006.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+    sem_name: none

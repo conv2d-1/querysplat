@@ -1,0 +1,94 @@
+# Visualization config: standard 3-dataset set + HaSim-Character (2026-03-17)
+#
+# 5 scenes × ~4 frames selected per dataset for qualitative inspection.
+# HaSim-Character uses the val split, last 5 scenes.
+
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/test_mf_with_tracking_2048.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.kubric4d_track_dataset.Kubric4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/test_mf_stereo_with_trajs.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: dynamicreplica
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.dynamicreplica_track_dataset.DynamicReplicaTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/Hasim_pinhole_4D_character/hasim_4d_mf_val_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/nasTeam2/AI/datasets/TMD
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hasim_character
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.hasim_track_dataset.HaSimTrackDataset
+    skip_static_threshold: 0.02
+    mf_to_mv: true
+    clip_maxlen: 10
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null

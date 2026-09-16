@@ -1,0 +1,71 @@
+datasets_train:
+  - data_path: results/test_250711/rc_vggt_250707_obj_infini_mvpdcg_bs1_8f_backup_20250711-165918/outputs/iter_000001/ios/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: trainval
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    object_mask_root: /mnt/netdata/Team/AI/datasets/TMD
+    object_mask_pattern: [
+        ["/raw_data/", "/processed_data/"],
+        ["/images_orin/", "/"],
+    ]
+
+datasets_val:
+  - data_path: results/test_250711/rc_vggt_250707_obj_infini_mvpdcg_bs1_8f_backup_20250711-165918/outputs/iter_000001/ios/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    object_mask_root: /mnt/netdata/Team/AI/datasets/TMD
+    object_mask_pattern: [
+        ["/raw_data/", "/processed_data/"],
+        ["/images_orin/", "/"],
+    ]
+
+datasets_vis:
+  - data_path: results/test_250711/rc_vggt_250707_obj_infini_mvpdcg_bs1_8f_backup_20250711-165918/outputs/iter_000001/ios/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    object_mask_root: /mnt/netdata/Team/AI/datasets/TMD
+    object_mask_pattern: [
+        ["/raw_data/", "/processed_data/"],
+        ["/images_orin/", "/"],
+    ]

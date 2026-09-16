@@ -1,0 +1,86 @@
+datasets_train:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250508_davinci/gs_demo/20250508_bike_pose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Ha2RGBD_V2/json/20250619_repose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250429_maxwell/patagonia/20250429_182841_pose.json
+    only_pointmap: false
+    with_pointmap: false
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/base_gs.py
+    name: real_mf_ft
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [0]
+    mf_view_num: 1
+
+    mf_frame_num: 1
+    mf_frame_step: 1
+
+    sf_to_mf: true
+    # lidar_name: lidar_depth
+    # type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    # interpolate_k: 3
+    # interpolate_version: v3
+    phase: train
+
+datasets_val:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250508_davinci/gs_demo/20250508_bike_pose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Ha2RGBD_V2/json/20250619_repose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250508_davinci/gs_demo/20250508_bike_pose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250429_maxwell/patagonia/20250429_182841_pose.json
+    only_pointmap: false
+    with_pointmap: false
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/base_gs.py
+    name: real_mf_ft
+
+    sampling_strategy: end:1
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [0]
+    mf_view_num: 1
+
+    mf_frame_num: 4 # 8
+    mf_frame_ids: [1,9,19,29] # [0,45,90,135,180,225,270,315] # [1,9,19,29] # [0,4,8,12,16,20,24,28]
+    mf_offline_mode: true 
+
+    lidar_name: lidar_depth
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    interpolate_k: 3
+    interpolate_version: v3
+    phase: val
+
+datasets_vis:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250508_davinci/gs_demo/20250508_bike_pose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Ha2RGBD_V2/json/20250619_repose.json
+    # /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250429_maxwell/patagonia/20250429_182841_pose.json
+    only_pointmap: false
+    with_pointmap: false
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/base_gs.py
+    name: real_mf_ft
+
+    sampling_strategy: end:1
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [0]
+    mf_view_num: 1
+
+    mf_frame_num: 4 # 8
+    mf_frame_ids: [1,9,19,29] # [0,45,90,135,180,225,270,315] # 0,4,8,12,16,20,24,28
+    mf_offline_mode: true 
+
+    lidar_name: lidar_depth
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    interpolate_k: 3
+    interpolate_version: v3
+    phase: vis

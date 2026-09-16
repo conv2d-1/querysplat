@@ -1,0 +1,143 @@
+import logging
+
+import torch
+import torch.nn as nn
+
+from hAlgorithm.modules.models.mde_model.depth_anything_v2.dinov2 import DINOv2
+from hAlgorithm.modules.models.moge.model.utils import wrap_dinov2_attention_with_sdpa
+
+from .config import model_configs
+
+
+class Dinov2Encoder(nn.Module):
+    def __init__(
+        self,
+        patch_size=14,
+        name="vitl",
+        use_clstoken=False,
+        dinov2_attention_with_sdpa=True,
+        pretrain=None,
+        normalize=True,
+        with_register=False,
+        encoder_cond_dim=0,
+        dinov2_custom_cfg=dict(),
+        debug=False,
+    ):
+        super().__init__()
+
+        self.patch_size = patch_size
+        self.use_clstoken = use_clstoken
+        self.encoder_cond_dim = encoder_cond_dim
+        self.dinov2_custom_cfg = dinov2_custom_cfg
+
+        self.name = name
+        self.model_configs = model_configs[self.name]
+
+        self.dinov2_attention_with_sdpa = dinov2_attention_with_sdpa
+        self.pretrain = pretrain
+        self.with_register = with_register
+        self.debug = debug
+
+        self.build_dino()
+
+        # mean and std of the pretrained dinov2 model
+        self.normalize = normalize
+        self.register_buffer("_mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
+        self.register_buffer("_std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
+
+    def enable_pytorch_native_sdpa(self):
+        """
+        Enables PyTorch's native scaled dot product attention (SDPA) for the backbone's attention layers.
+        """
+        for block in self.dinov2.blocks:
+            block.attn = wrap_dinov2_attention_with_sdpa(block.attn)
+
+    def build_dino(self):
+        self.dinov2 = DINOv2(
+            model_name=self.name, patch_size=self.patch_size, **self.dinov2_custom_cfg
+        )
+
+        if self.dinov2_attention_with_sdpa:
+            self.enable_pytorch_native_sdpa()
+
+        if self.pretrain is not None:
+            self.dinov2.load_state_dict(
+                torch.load(self.pretrain, map_location="cpu", weights_only=False),
+                strict=True,
+            )
+            logging.info(f"Dinov2ConditionEncoder, load pretrain {self.pretrain}")
+
+        if self.encoder_cond_dim > 0:
+            self.dinov2.patch_embed.init_alpha_conv(cond_channels=self.encoder_cond_dim)
+
+    def get_out_channels(self):
+        return self.dinov2.blocks[0].attn.qkv.in_features
+
+    def forward(self, x, condition=None, meta_data=None):
+        h, w = x.shape[-2:]
+        patch_h, patch_w = h // self.patch_size, w // self.patch_size
+
+        meta_data["patch_h"] = patch_h
+        meta_data["patch_w"] = patch_w
+
+        # Normalize the image. Assuming `x` is in [-1, 1], this converts it to [0, 1] and then normalizes using mean and std.
+        if self.normalize:
+            x = ((x + 1) * 0.5 - self._mean) / self._std
+
+        features = self.dinov2.get_intermediate_layers(
+            x,
+            self.model_configs["layer_idxs"],
+            return_class_token=self.use_clstoken,
+            condition=condition,
+        )
+
+        if self.debug:
+            self.vis_dino_features(features, patch_h, patch_w, meta_data)
+
+        return features
+
+    def vis_dino_features(self, features, patch_h, patch_w, meta_data):
+        import os
+
+        import matplotlib.pyplot as plt
+
+        def vis_heatmap(out_path, heatmap):
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            fig = plt.figure(frameon=False)
+            fig.set_size_inches(heatmap.shape[1] / 10, heatmap.shape[0] / 10)
+            ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
+            fig.add_axes(ax)
+            # norm = mpl.colors.Normalize(vmin=-2, vmax=2)
+            handler = ax.imshow(heatmap, cmap=plt.cm.jet)
+            fig.colorbar(handler)
+
+            fig.savefig(out_path, dpi=100)
+            plt.close("all")
+
+        views = meta_data["views"][0]
+        frames = meta_data["frames"][0]
+        T = views * frames
+        B = features[0].shape[0] // T
+        print(meta_data["data_info"]["rgb"])
+        for i, feature in enumerate(features):
+            feature = (
+                feature.reshape(-1, patch_h, patch_w, feature.shape[-1])
+                .max(dim=-1)[0]
+                .detach()
+                .cpu()
+                .numpy()
+            )
+            for bi in range(B):
+                for fi in range(T):
+                    out_path = f"./debug/vis_dino_features/b{bi:02d}_n{i:02d}_f{fi:02d}.jpg"
+                    vis_heatmap(out_path, feature[bi * T + fi])
+
+                    rgb = os.path.join(
+                        "/mnt/netdata/Team/AI/datasets/TMD/", meta_data["data_info"]["rgb"][fi][bi]
+                    )
+                    dst = f"./debug/vis_dino_features/b{bi:02d}_n{i:02d}_f{fi:02d}_rgb.jpg"
+                    assert rgb != dst
+                    if i == 0:
+                        os.system(f"cp {rgb} {dst}")
+
+        breakpoint()

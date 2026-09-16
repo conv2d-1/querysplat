@@ -1,0 +1,13 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/NYUV2/test.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    pipeline: hAlgorithm/configs/dataset/diffuser/pipeline/nyu.py
+    train_transforms: [
+        type: "hAlgorithm.datasets.transforms.transforms.ToTensor"
+    ]
+    test_transforms: [
+        type: "hAlgorithm.datasets.transforms.transforms.ToTensor"
+    ]
+    
+    

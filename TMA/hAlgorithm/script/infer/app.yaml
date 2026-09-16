@@ -1,0 +1,127 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim/data_split_marigold_v2/test.json
+    sampling_strategy: first:10
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+    name: synthetic
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/test.json
+    sampling_strategy: first:10
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    interpolate_k: 1
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    type: hAlgorithm.datasets.lidar_depth_dataset.LidarDepthDataset
+    name: FT
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Davinci/train_mf.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.1
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    mf_to_sf: true
+    mf_scene: "20240830_112911"
+    mf_frame_id: 4
+    mf_view_ids: [1, 2, 3]
+    # max_frame_id: 20
+    # min_frame_id: 10
+    name: p128_multi_views
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Davinci/train_mf.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.1
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    mf_to_sf: true
+    mf_scene: "20240830_112911"
+    # mf_frame_id: 4
+    mf_view_ids: [1]
+    max_frame_id: 65
+    min_frame_id: 15
+
+    name: p128_multi_frames
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Ha2RGBD/test_indoor.json
+    sampling_strategy: all
+    sparse_depth_ratio: 1.0
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+    type: hAlgorithm.datasets.lidar_depth_dataset.LidarDepthDataset
+    name: ft1
+    
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/iphone_test/train_mf.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.1
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    
+    type: hAlgorithm.datasets4d.lidar_depth_dataset.LidarDepthDataset4D
+    mf_to_sf: true
+    mf_scene: "meeting"
+    # mf_frame_id: 4
+    mf_view_ids: [0]
+    # max_frame_id: 30
+    min_frame_id: 5
+
+    name: iphone_multi_frames
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/test.json
+    sampling_strategy: index:4
+    sparse_depth_ratio: 1.0
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+    type: hAlgorithm.datasets.lidar_depth_dataset.LidarDepthDataset
+    name: ft_zed
+
+    

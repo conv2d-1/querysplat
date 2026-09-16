@@ -1,0 +1,73 @@
+datasets:
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 768
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3629
+  # mf_data_scene_frames max 100, min 6, mean 97, median 100   
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/test_mf_with_tracking_2048.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.kubric4d_track_dataset.Kubric4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/test_mf_stereo_with_trajs.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: dynamicreplica
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.dynamicreplica_track_dataset.DynamicReplicaTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null

@@ -1,0 +1,28 @@
+--extra-index-url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# torch
+# A100 & A800
+# /mnt/personal/ts/github/torch/torch2.1.2/torch-2.1.2+cu118-cp39-cp39-linux_x86_64.whl
+# H20
+/mnt/netdata/Team/AI/personal/ts/tools/torch/torch2.1.2/torch-2.1.2+cu118-cp39-cp39-linux_x86_64.whl
+
+# --extra-index-url https://download.pytorch.org/whl/cu118
+# torch==2.1.2
+torchvision==0.16.2
+torchaudio==2.1.2
+
+# unsloth
+bitsandbytes==0.43.1
+trl==0.10.1
+
+# xformers
+ninja
+/mnt/netdata/Team/AI/personal/ts/tools/python/xformers-0.0.23.post1+cu118-cp39-cp39-manylinux2014_x86_64.whl # match torch-2.1.2
+# xformers==0.0.23.post1 # match torch-2.1.2
+
+# normal
+peft==0.10.0 # match unsloth, LoraLayer.update_layer = LoraLayer_update_layer
+gpustat
+loguru
+tensorboard
+numpy==1.26.4

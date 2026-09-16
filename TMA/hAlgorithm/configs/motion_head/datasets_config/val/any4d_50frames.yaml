@@ -1,0 +1,47 @@
+# Validation config: Any4D standard (PointOdyssey + Kubric4D)
+# 10 scenes × 50 frames per dataset = 1000 frames total
+
+datasets:
+  # PointOdyssey - 10 scenes × 50 frames
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+    type: hAlgorithm.datasets_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0
+
+  # Kubric-4D - 10 scenes × 50 frames
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/test_mf_with_tracking_2048.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+    type: hAlgorithm.datasets_4d.kubric4d_track_dataset.Kubric4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0

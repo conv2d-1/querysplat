@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visualization Viewer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+<style>
+:root {
+  --bg: #f5f6fa;
+  --bg2: #ffffff;
+  --bg3: #eef0f6;
+  --border: #d8dce6;
+  --text: #1a1d29;
+  --text2: #5f6680;
+  --accent: #4f5bd5;
+  --accent2: #0ea5a0;
+  --red: #e53e3e;
+  --orange: #dd6b20;
+  --green: #38a169;
+  --yellow: #d69e2e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+.header {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 { font-size: 14px; font-weight: 600; color: var(--accent); }
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-left: 20px;
+}
+.tab-btn {
+  padding: 6px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: var(--text); background: var(--bg3); }
+.tab-btn.active { background: var(--accent); color: #fff; }
+.sample-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+.sample-selector select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.nav-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.layout { display: flex; height: calc(100vh - 37px); }
+.sidebar {
+  width: 320px;
+  min-width: 260px;
+  max-width: 500px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  position: relative;
+  transition: width 0.2s, min-width 0.2s, padding 0.2s;
+}
+.sidebar.collapsed {
+  width: 32px !important;
+  min-width: 32px !important;
+  padding: 12px 0;
+  overflow: hidden;
+}
+.sidebar.collapsed .sidebar-content { display: none; }
+.sidebar.collapsed .sidebar-toggle-icon { transform: rotate(180deg); }
+.sidebar-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 10px;
+  z-index: 10;
+  background: var(--bg3);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.sidebar-toggle:hover { background: var(--border); color: var(--text); }
+.sidebar.collapsed .sidebar-toggle { right: 6px; }
+.sidebar-toggle-icon { transition: transform 0.2s; display: inline-block; }
+.sidebar-content { padding-right: 24px;
+  overflow-y: auto;
+  padding: 12px;
+}
+.sidebar h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  margin: 12px 0 8px 8px;
+}
+.exp-count {
+  font-size: 10px;
+  color: var(--text2);
+  margin-left: 4px;
+}
+.exp-item {
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-bottom: 2px;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.exp-item:hover { background: var(--bg3); }
+.exp-item.active { background: var(--accent); color: #fff; }
+.exp-item .exp-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar-controls {
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.sidebar-controls input[type="text"] {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+}
+.sidebar-controls input[type="text"]:focus { border-color: var(--accent); }
+
+.options-panel {
+  border-top: 1px solid var(--border);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.view-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: background 0.15s;
+}
+.view-option:hover { background: var(--bg3); }
+.view-option input[type="checkbox"] { accent-color: var(--accent); }
+.view-option label { cursor: pointer; }
+.rotation-control {
+  position: absolute;
+  top: 50px;
+  left: 12px;
+  z-index: 10;
+  background: var(--bg2);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  display: flex;
+  gap: 12px;
+}
+.rot-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text2);
+}
+.rot-input input {
+  width: 60px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--bg3);
+  color: var(--text);
+  text-align: right;
+}
+
+.main { flex: 1; overflow-y: auto; padding: 16px; min-width: 0; }
+.page { display: none; }
+.page.active { display: block; }
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.image-grid > .card {
+  width: 500px;
+  flex-shrink: 0;
+}
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card-header {
+  padding: 10px 14px;
+  background: var(--bg3);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.card img {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.card img:hover { opacity: 0.9; }
+
+.pointcloud-page {
+  position: relative;
+  height: calc(100vh - 37px - 32px);
+  min-height: 500px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pointcloud-header {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+}
+.pc-btn {
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.pc-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+#pointcloud-canvas { 
+  width: 100%; 
+  height: calc(100vh - 37px - 32px - 32px); 
+  min-height: 500px;
+  display: block;
+  box-sizing: border-box;
+}
+#page-pointcloud, #page-images, #content {
+  width: 100%;
+  box-sizing: border-box;
+}
+.pointcloud-page {
+  width: 100%;
+}
+.point-size-control {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg2);
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.point-size-control label { font-size: 12px; color: var(--text2); }
+.point-size-control input { width: 100px; accent-color: var(--accent); }
+.point-size-control span { font-size: 12px; color: var(--text); min-width: 20px; }
+.loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 16px 32px;
+  border-radius: 8px;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 13px;
+  color: var(--text2);
+}
+.fullscreen-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+.fullscreen-overlay img {
+  max-width: 95%;
+  max-height: 95%;
+  object-fit: contain;
+}
+.fullscreen-overlay .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #fff;
+  opacity: 0.8;
+}
+.fullscreen-overlay .close-btn:hover { opacity: 1; }
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text2);
+}
+.empty-state h3 { font-size: 16px; margin-bottom: 8px; }
+.no-selection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text2);
+  font-size: 14px;
+}
+@media (max-width: 900px) {
+  .image-grid > .card { width: 100% !important; }
+  .sidebar { width: 240px; min-width: 200px; }
+}
+
+/* Compare mode styles */
+.compare-container {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+.compare-column {
+  flex: 0 0 auto;
+  width: var(--compare-col-width, 500px);
+}
+.compare-column-header {
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px 6px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.compare-column-content {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 8px;
+}
+.compare-img-item {
+  margin-bottom: 8px;
+}
+.compare-img-item:last-child {
+  margin-bottom: 0;
+}
+.compare-img-label {
+  font-size: 10px;
+  color: var(--text2);
+  margin-bottom: 4px;
+}
+.compare-img-item img {
+  width: 100%;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.compare-img-item img:hover {
+  opacity: 0.9;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Visualization Viewer</h1>
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="images" onclick="switchPage('images')">Images</button>
+    <button class="tab-btn" data-tab="pointcloud" onclick="switchPage('pointcloud')">Point Cloud</button>
+  </div>
+  <div class="sample-selector">
+    <select id="iter-select" onchange="loadSamples()" disabled style="margin-right:8px;">
+      <option value="">Iteration</option>
+    </select>
+    <button class="nav-btn" id="prev-btn" onclick="prevSample()" disabled>← Prev</button>
+    <select id="sample-select" onchange="loadSample()" disabled>
+      <option value="">Select experiment first</option>
+    </select>
+    <button class="nav-btn" id="next-btn" onclick="nextSample()" disabled>Next →</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+      <span class="sidebar-toggle-icon">◀</span>
+    </div>
+    <div class="sidebar-content">
+      <div class="sidebar-controls">
+        <input type="text" id="exp-search" placeholder="Search experiments..." oninput="renderSidebar()">
+      </div>
+      <div id="exp-list"></div>
+    
+    <div class="options-panel" id="options-images">
+      <h3>Display Options</h3>
+      <div class="view-option">
+        <input type="checkbox" id="show-merge-rgb" checked onchange="updateImages()">
+        <label for="show-merge-rgb">Merge RGB</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-depth" checked onchange="updateImages()">
+        <label for="show-depth">Depth</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-error" onchange="updateImages()">
+        <label for="show-error">Error</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-conf" checked onchange="updateImages()">
+        <label for="show-conf">Confidence</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-conf-mask" checked onchange="updateImages()">
+        <label for="show-conf-mask">Conf Mask</label>
+      </div>
+    </div>
+    
+    <div class="options-panel" id="options-pointcloud" style="display:none;">
+      <h3>Point Clouds (Single View)</h3>
+      <div class="view-option">
+        <input type="checkbox" id="show-gt" onchange="updatePointCloud()">
+        <label for="show-gt">GT Points</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-pred" checked onchange="updatePointCloud()">
+        <label for="show-pred">Predicted</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-filtered" onchange="updatePointCloud()">
+        <label for="show-filtered">Filtered</label>
+      </div>
+      <h3>Point Clouds (Global)</h3>
+      <div class="view-option">
+        <input type="checkbox" id="show-glb-gt" onchange="updatePointCloud()">
+        <label for="show-glb-gt">Global GT</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-glb-pred" onchange="updatePointCloud()">
+        <label for="show-glb-pred">Global Pred</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-lcl2glb" checked onchange="updatePointCloud()">
+        <label for="show-lcl2glb">Local2Global</label>
+      </div>
+      <h3>Per-Frame Points</h3>
+      <div class="view-option">
+        <input type="checkbox" id="show-frame-points" onchange="updatePointCloud()">
+        <label for="show-frame-points">Frame Points</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-frame-filtered" onchange="updatePointCloud()">
+        <label for="show-frame-filtered">Frame Filtered</label>
+      </div>
+      <h3>Display</h3>
+      <div class="view-option">
+        <input type="checkbox" id="show-grid" onchange="toggleGrid()">
+        <label for="show-grid">Show Grid</label>
+      </div>
+      <div class="view-option">
+        <input type="checkbox" id="show-axes" checked onchange="toggleAxes()">
+        <label for="show-axes">Show Axes</label>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="no-selection" class="no-selection">
+      <div class="empty-state">
+        <h3>Select an experiment</h3>
+        <p>Choose an experiment from the sidebar to view visualizations.</p>
+      </div>
+    </div>
+    
+    <div id="content" style="display:none;">
+      <!-- Compare Mode -->
+      <div id="compare-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;">
+          <label style="font-size:11px;color:var(--text2);white-space:nowrap;">Global Size:</label>
+          <input type="range" id="compare-img-size" min="150" max="1000" value="500" oninput="updateCompareImgSize(this.value)" style="flex:1;max-width:250px;accent-color:var(--accent);">
+          <span id="compare-img-size-label" style="font-size:11px;color:var(--text);min-width:40px;">500px</span>
+        </div>
+        <div id="compare-exp-toggles" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;"></div>
+        <div class="compare-section">
+          <div style="display:flex;align-items:center;gap:8px;"><span class="section-title" style="margin:0;">GT Images</span><input type="range" class="section-size-slider" data-target="compare-gt" min="150" max="1000" value="500" oninput="updateSectionImgSize(this)" style="width:120px;accent-color:var(--accent2);"><span class="section-size-label" style="font-size:10px;color:var(--text2);min-width:35px;">500px</span></div>
+          <div class="compare-container" id="compare-gt"></div>
+        </div>
+        <div class="compare-section">
+          <div style="display:flex;align-items:center;gap:8px;"><span class="section-title" style="margin:0;">Prediction Images (Depth)</span><input type="range" class="section-size-slider" data-target="compare-depth" min="150" max="1000" value="500" oninput="updateSectionImgSize(this)" style="width:120px;accent-color:var(--accent2);"><span class="section-size-label" style="font-size:10px;color:var(--text2);min-width:35px;">500px</span></div>
+          <div class="compare-container" id="compare-depth"></div>
+        </div>
+        <div class="compare-section">
+          <div style="display:flex;align-items:center;gap:8px;"><span class="section-title" style="margin:0;">Prediction Images (Confidence)</span><input type="range" class="section-size-slider" data-target="compare-conf" min="150" max="1000" value="500" oninput="updateSectionImgSize(this)" style="width:120px;accent-color:var(--accent2);"><span class="section-size-label" style="font-size:10px;color:var(--text2);min-width:35px;">500px</span></div>
+          <div class="compare-container" id="compare-conf"></div>
+        </div>
+        <div class="compare-section">
+          <div style="display:flex;align-items:center;gap:8px;"><span class="section-title" style="margin:0;">Prediction Images (Conf Mask)</span><input type="range" class="section-size-slider" data-target="compare-conf-mask" min="150" max="1000" value="500" oninput="updateSectionImgSize(this)" style="width:120px;accent-color:var(--accent2);"><span class="section-size-label" style="font-size:10px;color:var(--text2);min-width:35px;">500px</span></div>
+          <div class="compare-container" id="compare-conf-mask"></div>
+        </div>
+      </div>
+      
+      <!-- Images Page -->
+      <div class="page active" id="page-images">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;">
+          <label style="font-size:11px;color:var(--text2);white-space:nowrap;">Global Image Size:</label>
+          <input type="range" id="img-size-slider" min="200" max="1200" value="500" oninput="updateGlobalImgSize(this.value)" style="flex:1;max-width:250px;accent-color:var(--accent);">
+          <span id="img-size-label" style="font-size:11px;color:var(--text);min-width:45px;">500px</span>
+        </div>
+        <div class="section-title">GT Images</div>
+        <div class="image-grid" id="gt-images"></div>
+        <div class="section-title">Prediction Images</div>
+        <div class="image-grid" id="pred-images"></div>
+      </div>
+
+      <!-- Point Cloud Page -->
+      <div class="page" id="page-pointcloud">
+        <div class="pointcloud-page">
+          <div class="pointcloud-header">
+            <button class="pc-btn" onclick="resetCamera()">Reset View</button>
+            <button class="pc-btn" onclick="setTopView()">Top</button>
+            <button class="pc-btn" onclick="setFrontView()">Front</button>
+            <button class="pc-btn" onclick="setSideView()">Side</button>
+          </div>
+          <div class="rotation-control">
+            <div class="rot-input"><label>X:</label><input type="number" id="rot-x" value="0" step="5" onchange="updateRotation()">°</div>
+            <div class="rot-input"><label>Y:</label><input type="number" id="rot-y" value="0" step="5" onchange="updateRotation()">°</div>
+            <div class="rot-input"><label>Z:</label><input type="number" id="rot-z" value="0" step="5" onchange="updateRotation()">°</div>
+            <div class="rot-input"><label>Spacing:</label><input type="number" id="pc-spacing" value="10" step="1" min="0" onchange="updatePointCloud()" style="width:50px;"></div>
+          </div>
+          <div class="point-size-control">
+            <label>Point Size:</label>
+            <input type="range" id="point-size" min="0.01" max="5" step="0.01" value="0.03" oninput="updatePointSizeFromSlider()">
+            <input type="number" id="point-size-input" min="0.001" max="10" step="0.01" value="0.03" style="width:60px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px;" onchange="updatePointSizeFromInput()">
+          </div>
+          <div id="pointcloud-canvas"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading" id="loading">Loading...</div>
+
+<div class="fullscreen-overlay" id="fullscreen-overlay" onclick="closeFullscreen()">
+  <span class="close-btn">&times;</span>
+  <img id="fullscreen-img" src="">
+</div>
+
+<script>
+// Sidebar collapse state (default expanded for vis page)
+let sidebarCollapsed = false;
+function toggleSidebar() {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sidebar = document.getElementById('sidebar');
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+  } else {
+    sidebar.classList.remove('collapsed');
+  }
+  // Trigger resize to update Three.js renderer and layout
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 250);
+}
+
+let experiments = [];
+let currentExp = null;
+let iterations = [];
+let currentIteration = '';
+let samples = [];
+let currentSampleIndex = 0;
+let currentSample = null;
+let currentPage = 'images';
+let threeJSInitialized = false;
+let pointCloudNeedsUpdate = true;
+let filterGroup = null;
+
+// Compare mode
+let compareMode = false;
+let compareExps = [];
+let compareSamplesMap = {};
+let compareIterationsMap = {};
+let commonSampleIds = [];
+
+let scene, camera, renderer, controls;
+let gtPoints = null, predPoints = null, filteredPoints = null;
+let glbGtPoints = null, glbPredPoints = null, lcl2glbPoints = null;
+let framePointsList = [], frameFilteredList = [];
+let pointSize = 0.03;
+let gridHelper = null;
+let axesScene, axesCamera, axesRenderer;
+let axesHelper = null;
+let axesLabels = [];
+let pcLabels = [];
+
+async function loadExperiments() {
+  showLoading(true);
+  try {
+    const response = await fetch('/api/vis/experiments');
+    experiments = await response.json();
+    renderSidebar();
+  } catch (e) {
+    console.error('Error loading experiments:', e);
+  }
+  showLoading(false);
+}
+
+function getFilteredExperiments() {
+  const search = (document.getElementById('exp-search').value || '').toLowerCase();
+  return experiments.filter(e => {
+    if (filterGroup && e.group !== filterGroup) return false;
+    if (search && !e.name.toLowerCase().includes(search) && !e.group.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function renderSidebar() {
+  const el = document.getElementById('exp-list');
+  const filtered = getFilteredExperiments();
+  let html = '';
+  
+  // Show filter indicator and clear button if filtering by group
+  if (filterGroup) {
+    html += `<div style="padding:6px 8px;margin-bottom:8px;background:var(--bg3);border-radius:4px;font-size:11px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:var(--text2);">Group: <strong style="color:var(--accent);">${filterGroup}</strong></span>
+      <button onclick="clearGroupFilter()" style="padding:2px 8px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--text2);cursor:pointer;font-size:10px;">Show All</button>
+    </div>`;
+  }
+  
+  let groups = {};
+  filtered.forEach(e => { if (!groups[e.group]) groups[e.group] = []; groups[e.group].push(e); });
+  
+  for (const [group, exps] of Object.entries(groups)) {
+    html += `<h3>${group} <span class="exp-count">(${exps.length})</span></h3>`;
+    exps.forEach(e => {
+      const active = currentExp && currentExp.group === e.group && currentExp.name === e.name;
+      html += `<div class="exp-item ${active ? 'active' : ''}" onclick="selectExp('${e.group}','${e.name}')">
+        <span class="exp-name" title="${e.name}">${e.name}</span>
+      </div>`;
+    });
+  }
+  if (!filtered.length) html += '<div style="padding:20px;text-align:center;color:var(--text2);font-size:12px;">No experiments found</div>';
+  el.innerHTML = html;
+}
+
+function clearGroupFilter() {
+  filterGroup = null;
+  // Update URL without the group filter
+  const url = new URL(window.location);
+  url.searchParams.delete('group');
+  url.searchParams.delete('name');
+  window.history.replaceState({}, '', url);
+  renderSidebar();
+}
+
+async function selectExp(group, name) {
+  // Exit compare mode if active
+  compareMode = false;
+  
+  currentExp = experiments.find(e => e.group === group && e.name === name);
+  renderSidebar();
+  
+  document.getElementById('no-selection').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('compare-view').style.display = 'none';
+  
+  // Restore tab bar visibility (may have been hidden in compare mode)
+  document.querySelector('.tab-bar').style.display = '';
+  document.querySelector('.sample-selector').style.display = '';
+  
+  // Ensure pages are correctly displayed
+  switchPage(currentPage);
+  
+  await loadIterations();
+  await loadSamples();
+}
+
+async function loadIterations() {
+  if (!currentExp) return;
+  
+  try {
+    const response = await fetch(`/api/vis/iterations?group=${encodeURIComponent(currentExp.group)}&name=${encodeURIComponent(currentExp.name)}`);
+    iterations = await response.json();
+    
+    const select = document.getElementById('iter-select');
+    if (iterations.length > 0) {
+      select.disabled = false;
+      select.innerHTML = iterations.map(iter => 
+        `<option value="${iter}">${iter}</option>`
+      ).join('');
+      // Select the latest iteration by default
+      currentIteration = iterations[iterations.length - 1];
+      select.value = currentIteration;
+    } else {
+      select.disabled = true;
+      select.innerHTML = '<option value="">No iterations</option>';
+      currentIteration = '';
+    }
+  } catch (e) {
+    console.error('Error loading iterations:', e);
+  }
+}
+
+async function loadSamples() {
+  if (!currentExp) return;
+  showLoading(true);
+  
+  // Get current iteration from selector
+  currentIteration = document.getElementById('iter-select').value || '';
+  
+  try {
+    let url = `/api/vis/samples?group=${encodeURIComponent(currentExp.group)}&name=${encodeURIComponent(currentExp.name)}`;
+    if (currentIteration) {
+      url += `&iteration=${encodeURIComponent(currentIteration)}`;
+    }
+    const response = await fetch(url);
+    samples = await response.json();
+
+    const select = document.getElementById('sample-select');
+    select.disabled = false;
+    select.innerHTML = samples.map((s, i) =>
+      `<option value="${i}">Sample ${s.id}</option>`
+    ).join('');
+
+    if (samples.length > 0) {
+      currentSampleIndex = 0;
+      currentSample = samples[0];
+      updateNavButtons();
+      updateImages();
+      pointCloudNeedsUpdate = true;
+      if (currentPage === 'pointcloud' && threeJSInitialized) {
+        updatePointCloud();
+        pointCloudNeedsUpdate = false;
+      }
+    }
+  } catch (e) {
+    console.error('Error loading samples:', e);
+  }
+  showLoading(false);
+}
+
+function switchPage(page) {
+  console.log('switchPage called:', page, 'compareMode:', compareMode, 'threeJSInitialized:', threeJSInitialized);
+  if (compareMode) return; // Don't switch pages in compare mode
+  
+  currentPage = page;
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === page);
+  });
+  
+  // Ensure compare-view is hidden in normal mode
+  document.getElementById('compare-view').style.display = 'none';
+  
+  // Show/hide pages
+  const pageImages = document.getElementById('page-images');
+  const pagePointcloud = document.getElementById('page-pointcloud');
+  
+  pageImages.classList.toggle('active', page === 'images');
+  pagePointcloud.classList.toggle('active', page === 'pointcloud');
+  
+  // Also set explicit display to override any inline styles
+  pageImages.style.display = page === 'images' ? 'block' : 'none';
+  pagePointcloud.style.display = page === 'pointcloud' ? 'block' : 'none';
+  
+  document.getElementById('options-images').style.display = page === 'images' ? 'block' : 'none';
+  document.getElementById('options-pointcloud').style.display = page === 'pointcloud' ? 'block' : 'none';
+
+  if (page === 'pointcloud') {
+    if (!threeJSInitialized) {
+      // Use requestAnimationFrame to ensure DOM is ready, then init with retry
+      const initWithRetry = (retries = 0) => {
+        const container = document.getElementById('pointcloud-canvas');
+        if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+          initThreeJS();
+          threeJSInitialized = true;
+          if (pointCloudNeedsUpdate && currentSample) {
+            updatePointCloud();
+            pointCloudNeedsUpdate = false;
+          }
+        } else if (retries < 10) {
+          setTimeout(() => initWithRetry(retries + 1), 100);
+        } else {
+          console.error('Failed to initialize Three.js: container size is 0');
+        }
+      };
+      requestAnimationFrame(() => initWithRetry());
+    } else {
+      onWindowResize();
+      if (pointCloudNeedsUpdate && currentSample) {
+        updatePointCloud();
+        pointCloudNeedsUpdate = false;
+      }
+    }
+  }
+}
+
+function initThreeJS() {
+  const container = document.getElementById('pointcloud-canvas');
+  if (!container) {
+    console.error('pointcloud-canvas container not found');
+    return false;
+  }
+  
+  console.log('initThreeJS called, container size:', container.clientWidth, 'x', container.clientHeight);
+  
+  // Clear any existing canvas
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+  
+  // Get container size, use fallback if needed
+  let width = container.clientWidth;
+  let height = container.clientHeight;
+  
+  // If size is still 0, force a reflow and try again
+  if (width === 0 || height === 0) {
+    container.style.display = 'block';
+    container.offsetHeight; // Force reflow
+    width = container.clientWidth || container.parentElement.clientWidth || 800;
+    height = container.clientHeight || container.parentElement.clientHeight || 600;
+  }
+  
+  console.log('Using size:', width, 'x', height);
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a1d29);
+
+  camera = new THREE.PerspectiveCamera(60, width / height, 0.01, 1000);
+  camera.position.set(0, 5, 10);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(width, height);
+  container.appendChild(renderer.domElement);
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+
+  gridHelper = new THREE.GridHelper(20, 20, 0x444444, 0x333333);
+  gridHelper.visible = false;
+  scene.add(gridHelper);
+
+  // Create axes indicator in bottom-right corner
+  let axesContainer = document.getElementById('axes-container');
+  if (axesContainer) {
+    axesContainer.remove();
+  }
+  axesContainer = document.createElement('div');
+  axesContainer.id = 'axes-container';
+  axesContainer.style.cssText = 'position:absolute;bottom:12px;right:12px;width:100px;height:100px;border-radius:6px;overflow:hidden;border:1px solid #444;';
+  container.parentElement.appendChild(axesContainer);
+
+  axesScene = new THREE.Scene();
+  axesScene.background = new THREE.Color(0x222222);
+  
+  axesCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  axesCamera.position.set(3, 3, 3);
+  axesCamera.lookAt(0, 0, 0);
+  
+  axesRenderer = new THREE.WebGLRenderer({ antialias: true });
+  axesRenderer.setSize(100, 100);
+  axesContainer.appendChild(axesRenderer.domElement);
+  
+  axesHelper = new THREE.AxesHelper(1.5);
+  axesScene.add(axesHelper);
+
+  // Create axis labels
+  const createLabel = (text, position, color) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, 32, 32);
+    const texture = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(material);
+    sprite.position.copy(position);
+    sprite.scale.set(0.4, 0.4, 1);
+    return sprite;
+  };
+  axesLabels = [
+    createLabel('X', new THREE.Vector3(1.8, 0, 0), '#ff4444'),
+    createLabel('Y', new THREE.Vector3(0, 1.8, 0), '#44ff44'),
+    createLabel('Z', new THREE.Vector3(0, 0, 1.8), '#4444ff')
+  ];
+  axesLabels.forEach(label => axesScene.add(label));
+
+  window.addEventListener('resize', onWindowResize);
+  animate();
+}
+
+function onWindowResize() {
+  if (!threeJSInitialized || !renderer) return;
+  const container = document.getElementById('pointcloud-canvas');
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  if (width > 0 && height > 0) {
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+  }
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (controls) controls.update();
+  if (renderer && scene && camera) renderer.render(scene, camera);
+  
+  // Sync axes camera with main camera orientation
+  if (axesCamera && camera && axesRenderer && axesScene) {
+    axesCamera.position.copy(camera.position).normalize().multiplyScalar(5);
+    axesCamera.lookAt(0, 0, 0);
+    axesRenderer.render(axesScene, axesCamera);
+  }
+}
+
+async function loadPLY(url, color) {
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.PLYLoader();
+    loader.load(url, (geometry) => {
+      geometry.computeVertexNormals();
+      let material;
+      if (geometry.hasAttribute('color')) {
+        material = new THREE.PointsMaterial({ size: pointSize, vertexColors: true });
+      } else {
+        material = new THREE.PointsMaterial({ size: pointSize, color: color });
+      }
+      const points = new THREE.Points(geometry, material);
+      resolve(points);
+    }, undefined, reject);
+  });
+}
+
+function clearPointClouds() {
+  if (gtPoints) { scene.remove(gtPoints); gtPoints = null; }
+  if (predPoints) { scene.remove(predPoints); predPoints = null; }
+  if (filteredPoints) { scene.remove(filteredPoints); filteredPoints = null; }
+  if (glbGtPoints) { scene.remove(glbGtPoints); glbGtPoints = null; }
+  if (glbPredPoints) { scene.remove(glbPredPoints); glbPredPoints = null; }
+  if (lcl2glbPoints) { scene.remove(lcl2glbPoints); lcl2glbPoints = null; }
+  framePointsList.forEach(p => scene.remove(p));
+  framePointsList = [];
+  frameFilteredList.forEach(p => scene.remove(p));
+  frameFilteredList = [];
+  // Clear labels
+  pcLabels.forEach(label => scene.remove(label));
+  pcLabels = [];
+}
+
+function createPCLabel(text, color) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = color;
+  ctx.font = 'bold 36px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, 128, 32);
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(2, 0.5, 1);
+  return sprite;
+}
+
+function getFileUrl(path) {
+  return `/api/vis/file?group=${encodeURIComponent(currentExp.group)}&name=${encodeURIComponent(currentExp.name)}&path=${encodeURIComponent(path)}`;
+}
+
+async function updatePointCloud() {
+  if (!currentSample || !currentExp) return;
+  if (!threeJSInitialized) { pointCloudNeedsUpdate = true; return; }
+
+  const showGT = document.getElementById('show-gt').checked;
+  const showPred = document.getElementById('show-pred').checked;
+  const showFiltered = document.getElementById('show-filtered').checked;
+  const showGlbGt = document.getElementById('show-glb-gt').checked;
+  const showGlbPred = document.getElementById('show-glb-pred').checked;
+  const showLcl2glb = document.getElementById('show-lcl2glb').checked;
+  const showFramePoints = document.getElementById('show-frame-points').checked;
+  const showFrameFiltered = document.getElementById('show-frame-filtered').checked;
+
+  clearPointClouds();
+  showLoading(true);
+
+  try {
+    const frames = currentSample.frames || {};
+    const frameIds = Object.keys(frames).sort();
+    
+    // For single-view (only f000), use frame data as fallback for pred
+    const pred = { ...currentSample.pred };
+    if (frameIds.length === 1 && frameIds[0] === '000') {
+      const f000 = frames['000'];
+      if (!pred.point && f000.point) pred.point = f000.point;
+      if (!pred.filtered_point && f000.filtered_point) pred.filtered_point = f000.filtered_point;
+    }
+    
+    // Count how many point clouds will be shown
+    const pcItems = [];
+    if (showGT && currentSample.gt.points_gt) pcItems.push({ type: 'gt', path: currentSample.gt.points_gt, label: 'GT', color: 0x38a169, colorStr: '#38a169' });
+    if (showPred && pred.point) pcItems.push({ type: 'pred', path: pred.point, label: 'Predicted', color: 0xe53e3e, colorStr: '#e53e3e' });
+    if (showFiltered && pred.filtered_point) pcItems.push({ type: 'filtered', path: pred.filtered_point, label: 'Filtered', color: 0x4f5bd5, colorStr: '#4f5bd5' });
+    if (showGlbGt && currentSample.gt.glb_points_gt) pcItems.push({ type: 'glb_gt', path: currentSample.gt.glb_points_gt, label: 'Global GT', color: 0x2d8659, colorStr: '#2d8659' });
+    if (showGlbPred && pred.glb_point) pcItems.push({ type: 'glb_pred', path: pred.glb_point, label: 'Global Pred', color: 0xc53030, colorStr: '#c53030' });
+    if (showLcl2glb && pred.lcl2glb_point) pcItems.push({ type: 'lcl2glb', path: pred.lcl2glb_point, label: 'Lcl2Glb', color: 0xd69e2e, colorStr: '#d69e2e' });
+    
+    // Per-frame point clouds
+    const frameColors = [0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xffeaa7, 0xdfe6e9, 0x74b9ff, 0xa29bfe];
+    frameIds.forEach((frameId, i) => {
+      const frame = frames[frameId];
+      const color = frameColors[i % frameColors.length];
+      const colorStr = '#' + color.toString(16).padStart(6, '0');
+      if (showFramePoints && frame.point) pcItems.push({ type: 'frame_point', frameId, path: frame.point, label: `F${frameId}`, color, colorStr });
+      if (showFrameFiltered && frame.filtered_point) pcItems.push({ type: 'frame_filtered', frameId, path: frame.filtered_point, label: `F${frameId} Flt`, color: color - 0x202020, colorStr });
+    });
+    
+    // Calculate offset spacing based on count
+    const spacing = parseFloat(document.getElementById('pc-spacing').value) || 10;
+    const showCount = pcItems.length;
+    
+    for (let i = 0; i < pcItems.length; i++) {
+      const item = pcItems[i];
+      const offsetX = showCount <= 1 ? 0 : (i - (showCount - 1) / 2) * spacing;
+      
+      const points = await loadPLY(getFileUrl(item.path), item.color);
+      points.position.x = offsetX;
+      scene.add(points);
+      
+      // Store reference
+      if (item.type === 'gt') gtPoints = points;
+      else if (item.type === 'pred') predPoints = points;
+      else if (item.type === 'filtered') filteredPoints = points;
+      else if (item.type === 'glb_gt') glbGtPoints = points;
+      else if (item.type === 'glb_pred') glbPredPoints = points;
+      else if (item.type === 'lcl2glb') lcl2glbPoints = points;
+      else if (item.type === 'frame_point') framePointsList.push(points);
+      else if (item.type === 'frame_filtered') frameFilteredList.push(points);
+      
+      // Add label
+      const label = createPCLabel(item.label, item.colorStr);
+      label.position.set(offsetX, 3, 0);
+      scene.add(label);
+      pcLabels.push(label);
+    }
+    
+    // Apply current rotation settings to newly loaded point clouds
+    updateRotation();
+    fitCameraToScene();
+  } catch (e) {
+    console.error('Error loading point cloud:', e);
+  }
+  showLoading(false);
+}
+
+function fitCameraToScene() {
+  const box = new THREE.Box3();
+  let hasPoints = false;
+  const allPoints = [gtPoints, predPoints, filteredPoints, glbGtPoints, glbPredPoints, lcl2glbPoints, ...framePointsList, ...frameFilteredList];
+  allPoints.forEach(p => { if (p) { box.expandByObject(p); hasPoints = true; } });
+  if (!hasPoints) return;
+
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  camera.position.set(center.x + maxDim, center.y + maxDim, center.z + maxDim);
+  controls.target.copy(center);
+  controls.update();
+}
+
+function resetCamera() { fitCameraToScene(); }
+function setTopView() {
+  const center = controls.target.clone();
+  camera.position.set(center.x, center.y + 10, center.z);
+  controls.update();
+}
+function setFrontView() {
+  const center = controls.target.clone();
+  camera.position.set(center.x, center.y, center.z + 10);
+  controls.update();
+}
+function setSideView() {
+  const center = controls.target.clone();
+  camera.position.set(center.x + 10, center.y, center.z);
+  controls.update();
+}
+
+function updatePointSizeFromSlider() {
+  pointSize = parseFloat(document.getElementById('point-size').value);
+  document.getElementById('point-size-input').value = pointSize;
+  applyPointSize();
+}
+
+function updatePointSizeFromInput() {
+  pointSize = parseFloat(document.getElementById('point-size-input').value) || 0.05;
+  document.getElementById('point-size').value = Math.min(Math.max(pointSize, 0.01), 5);
+  applyPointSize();
+}
+
+function applyPointSize() {
+  const allPoints = [gtPoints, predPoints, filteredPoints, glbGtPoints, glbPredPoints, lcl2glbPoints, ...framePointsList, ...frameFilteredList];
+  allPoints.forEach(p => { if (p) p.material.size = pointSize; });
+}
+
+function toggleGrid() {
+  if (gridHelper) {
+    gridHelper.visible = document.getElementById('show-grid').checked;
+  }
+}
+
+function toggleAxes() {
+  const show = document.getElementById('show-axes').checked;
+  const axesContainer = document.getElementById('axes-container');
+  if (axesContainer) {
+    axesContainer.style.display = show ? 'block' : 'none';
+  }
+}
+
+function updateRotation() {
+  const rotX = (parseFloat(document.getElementById('rot-x').value) || 0) * Math.PI / 180;
+  const rotY = (parseFloat(document.getElementById('rot-y').value) || 0) * Math.PI / 180;
+  const rotZ = (parseFloat(document.getElementById('rot-z').value) || 0) * Math.PI / 180;
+  
+  const allPoints = [gtPoints, predPoints, filteredPoints, glbGtPoints, glbPredPoints, lcl2glbPoints, ...framePointsList, ...frameFilteredList];
+  allPoints.forEach(points => {
+    if (points) {
+      points.rotation.set(rotX, rotY, rotZ);
+    }
+  });
+}
+
+function updateImages() {
+  if (!currentSample || !currentExp) return;
+
+  const showMergeRGB = document.getElementById('show-merge-rgb').checked;
+  const showDepth = document.getElementById('show-depth').checked;
+  const showError = document.getElementById('show-error').checked;
+  const showConf = document.getElementById('show-conf').checked;
+  const showConfMask = document.getElementById('show-conf-mask').checked;
+
+  let gtHtml = '';
+  if (showMergeRGB && currentSample.gt.merge_rgb) {
+    gtHtml += createImageCard('Merge RGB', currentSample.gt.merge_rgb);
+  }
+  document.getElementById('gt-images').innerHTML = gtHtml || '<div class="empty-state"><p>No GT images</p></div>';
+
+  let predHtml = '';
+  
+  // Multi-view per-frame images - group by type
+  const frames = currentSample.frames || {};
+  const frameIds = Object.keys(frames).sort();
+  
+  // Collect all depth images (single-view + multi-view)
+  if (showDepth) {
+    if (currentSample.pred.depth) {
+      predHtml += createImageCard('Depth', currentSample.pred.depth);
+    }
+    frameIds.forEach(frameId => {
+      const frame = frames[frameId];
+      if (frame.depth) {
+        predHtml += createImageCard(`Depth F${frameId}`, frame.depth);
+      }
+    });
+  }
+  
+  // Collect all error images (single-view + multi-view)
+  if (showError) {
+    if (currentSample.pred.error) {
+      predHtml += createImageCard('Error', currentSample.pred.error);
+    }
+    frameIds.forEach(frameId => {
+      const frame = frames[frameId];
+      if (frame.error) {
+        predHtml += createImageCard(`Error F${frameId}`, frame.error);
+      }
+    });
+  }
+  
+  // Collect all confidence images (single-view + multi-view)
+  if (showConf) {
+    if (currentSample.pred.conf) {
+      predHtml += createImageCard('Confidence', currentSample.pred.conf);
+    }
+    frameIds.forEach(frameId => {
+      const frame = frames[frameId];
+      if (frame.conf) {
+        predHtml += createImageCard(`Conf F${frameId}`, frame.conf);
+      }
+    });
+  }
+  
+  // Collect all confidence mask images (single-view + multi-view)
+  if (showConfMask) {
+    if (currentSample.pred.conf_mask) {
+      predHtml += createImageCard('Conf Mask', currentSample.pred.conf_mask);
+    }
+    frameIds.forEach(frameId => {
+      const frame = frames[frameId];
+      if (frame.conf_mask) {
+        predHtml += createImageCard(`Conf Mask F${frameId}`, frame.conf_mask);
+      }
+    });
+  }
+  
+  document.getElementById('pred-images').innerHTML = predHtml || '<div class="empty-state"><p>No prediction images</p></div>';
+}
+
+function updateGlobalImgSize(val) {
+  Object.keys(_cardSizeMap).forEach(k => delete _cardSizeMap[k]);
+  document.querySelectorAll('.image-grid > .card').forEach(card => {
+    card.style.width = val + 'px';
+  });
+  document.getElementById('img-size-label').textContent = val + 'px';
+  document.querySelectorAll('.card-size-slider').forEach(s => {
+    s.value = val;
+    s.parentElement.querySelector('.card-size-label').textContent = val + 'px';
+  });
+}
+
+let _cardIdCounter = 0;
+const _cardSizeMap = {};
+function createImageCard(title, path) {
+  const url = getFileUrl(path);
+  const cid = 'img-card-' + (_cardIdCounter++);
+  const globalVal = document.getElementById('img-size-slider') ? document.getElementById('img-size-slider').value : 500;
+  const val = _cardSizeMap[title] !== undefined ? _cardSizeMap[title] : globalVal;
+  return `
+    <div class="card" id="${cid}" data-title="${title}" style="width:${val}px;">
+      <div class="card-header" style="display:flex;align-items:center;gap:6px;">
+        <span style="flex:1;">${title}</span>
+        <input type="range" class="card-size-slider" min="200" max="1200" value="${val}" oninput="updateCardImgSize('${cid}', this)" onmousedown="lockGridLayout(this)" onmouseup="unlockGridLayout(this)" ontouchstart="lockGridLayout(this)" ontouchend="unlockGridLayout(this)" style="width:80px;accent-color:var(--accent2);">
+        <span class="card-size-label" style="font-size:10px;color:var(--text);min-width:35px;">${val}px</span>
+      </div>
+      <img src="${url}" alt="${title}" onclick="openFullscreen('${url}')">
+    </div>
+  `;
+}
+
+function updateCardImgSize(cardId, slider) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const val = slider.value;
+  card.style.width = val + 'px';
+  slider.parentElement.querySelector('.card-size-label').textContent = val + 'px';
+  const title = card.dataset.title;
+  if (title) _cardSizeMap[title] = val;
+}
+
+function lockGridLayout(slider) {
+  const grid = slider.closest('.image-grid');
+  if (!grid || grid.dataset.locked) return;
+  const cards = Array.from(grid.querySelectorAll(':scope > .card'));
+  const gridRect = grid.getBoundingClientRect();
+  const positions = cards.map(c => {
+    const r = c.getBoundingClientRect();
+    return { left: r.left - gridRect.left, top: r.top - gridRect.top, width: r.width };
+  });
+  grid.style.position = 'relative';
+  grid.style.height = grid.offsetHeight + 'px';
+  cards.forEach((c, i) => {
+    c.style.position = 'absolute';
+    c.style.left = positions[i].left + 'px';
+    c.style.top = positions[i].top + 'px';
+  });
+  grid.dataset.locked = '1';
+}
+
+function unlockGridLayout(slider) {
+  const grid = slider.closest('.image-grid');
+  if (!grid || !grid.dataset.locked) return;
+  grid.querySelectorAll(':scope > .card').forEach(c => {
+    c.style.position = '';
+    c.style.left = '';
+    c.style.top = '';
+  });
+  grid.style.position = '';
+  grid.style.height = '';
+  delete grid.dataset.locked;
+}
+
+function openFullscreen(src) {
+  document.getElementById('fullscreen-img').src = src;
+  document.getElementById('fullscreen-overlay').style.display = 'flex';
+}
+
+function closeFullscreen() {
+  document.getElementById('fullscreen-overlay').style.display = 'none';
+}
+
+function showLoading(show) {
+  document.getElementById('loading').style.display = show ? 'block' : 'none';
+}
+
+function loadSample() {
+  currentSampleIndex = parseInt(document.getElementById('sample-select').value);
+  currentSample = samples[currentSampleIndex];
+
+  updateNavButtons();
+  updateImages();
+
+  pointCloudNeedsUpdate = true;
+  if (currentPage === 'pointcloud' && threeJSInitialized) {
+    updatePointCloud();
+    pointCloudNeedsUpdate = false;
+  }
+}
+
+function updateNavButtons() {
+  document.getElementById('prev-btn').disabled = currentSampleIndex <= 0;
+  document.getElementById('next-btn').disabled = currentSampleIndex >= samples.length - 1;
+}
+
+function prevSample() {
+  if (currentSampleIndex > 0) {
+    document.getElementById('sample-select').value = currentSampleIndex - 1;
+    loadSample();
+  }
+}
+
+function nextSample() {
+  if (currentSampleIndex < samples.length - 1) {
+    document.getElementById('sample-select').value = currentSampleIndex + 1;
+    loadSample();
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  // Ignore shortcuts when typing in input fields
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  
+  if (e.key === 'ArrowLeft') prevSample();
+  if (e.key === 'ArrowRight') nextSample();
+  if (e.key === 'Escape') closeFullscreen();
+  if (e.key === '1') switchPage('images');
+  if (e.key === '2') switchPage('pointcloud');
+});
+
+function updateCompareImgSize(val) {
+  document.getElementById('compare-view').style.setProperty('--compare-col-width', val + 'px');
+  document.getElementById('compare-img-size-label').textContent = val + 'px';
+  document.querySelectorAll('.section-size-slider').forEach(s => {
+    s.value = val;
+    s.nextElementSibling.textContent = val + 'px';
+    document.getElementById(s.dataset.target).style.removeProperty('--compare-col-width');
+  });
+}
+
+function updateSectionImgSize(slider) {
+  const val = slider.value;
+  slider.nextElementSibling.textContent = val + 'px';
+  document.getElementById(slider.dataset.target).style.setProperty('--compare-col-width', val + 'px');
+}
+
+// Compare mode functions
+async function initCompareMode(expList) {
+  compareMode = true;
+  compareExps = [];
+  compareSamplesMap = {};
+  compareIterationsMap = {};
+  
+  // Parse experiment list
+  for (const expStr of expList) {
+    const idx = expStr.indexOf('/');
+    if (idx > 0) {
+      const group = expStr.substring(0, idx);
+      const name = expStr.substring(idx + 1);
+      compareExps.push({ group, name, key: expStr });
+    }
+  }
+  
+  if (compareExps.length === 0) return;
+  
+  // Hide sidebar, show compare view
+  document.querySelector('.sidebar').style.display = 'none';
+  document.getElementById('no-selection').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('page-images').style.display = 'none';
+  document.getElementById('page-pointcloud').style.display = 'none';
+  document.getElementById('compare-view').style.display = 'block';
+  
+  // Hide tab bar in compare mode
+  document.querySelector('.tab-bar').style.display = 'none';
+  
+  // Update title
+  document.querySelector('.header h1').textContent = `Compare (${compareExps.length} experiments)`;
+  
+  showLoading(true);
+  
+  // Load iterations and samples for each experiment
+  for (const exp of compareExps) {
+    try {
+      // Load iterations
+      const iterRes = await fetch(`/api/vis/iterations?group=${encodeURIComponent(exp.group)}&name=${encodeURIComponent(exp.name)}`);
+      const iters = await iterRes.json();
+      compareIterationsMap[exp.key] = iters;
+      
+      // Use latest iteration
+      const iteration = iters.length > 0 ? iters[iters.length - 1] : '';
+      exp.currentIter = iteration;
+      
+      // Load samples
+      let url = `/api/vis/samples?group=${encodeURIComponent(exp.group)}&name=${encodeURIComponent(exp.name)}`;
+      if (iteration) url += `&iteration=${encodeURIComponent(iteration)}`;
+      const samplesRes = await fetch(url);
+      compareSamplesMap[exp.key] = await samplesRes.json();
+    } catch (e) {
+      console.error(`Error loading ${exp.key}:`, e);
+      compareSamplesMap[exp.key] = [];
+      exp.currentIter = '';
+    }
+  }
+  
+  // Find common sample IDs across all experiments
+  const sampleIdSets = compareExps.map(exp => new Set(compareSamplesMap[exp.key].map(s => s.id)));
+  if (sampleIdSets.length > 0) {
+    commonSampleIds = [...sampleIdSets[0]].filter(id => sampleIdSets.every(set => set.has(id))).sort();
+  }
+  
+  // Setup sample selector
+  const select = document.getElementById('sample-select');
+  select.disabled = false;
+  select.innerHTML = commonSampleIds.map((id, i) => `<option value="${i}">Sample ${id}</option>`).join('');
+  
+  // Disable iteration selector in compare mode
+  document.getElementById('iter-select').disabled = true;
+  document.getElementById('iter-select').innerHTML = '<option>Latest</option>';
+  
+  // Render experiment visibility toggles
+  renderCompareExpToggles();
+
+  if (commonSampleIds.length > 0) {
+    currentSampleIndex = 0;
+    updateNavButtons();
+    updateCompareImages();
+  }
+  
+  showLoading(false);
+}
+
+function getCompareFileUrl(exp, path) {
+  return `/api/vis/file?group=${encodeURIComponent(exp.group)}&name=${encodeURIComponent(exp.name)}&path=${encodeURIComponent(path)}`;
+}
+
+function syncScroll(e) {
+  const scrollLeft = e.target.scrollLeft;
+  document.querySelectorAll('.compare-container').forEach(container => {
+    if (container !== e.target) {
+      container.scrollLeft = scrollLeft;
+    }
+  });
+}
+
+function setupScrollSync() {
+  document.querySelectorAll('.compare-container').forEach(container => {
+    container.removeEventListener('scroll', syncScroll);
+    container.addEventListener('scroll', syncScroll);
+  });
+}
+
+function renderCompareExpToggles() {
+  const el = document.getElementById('compare-exp-toggles');
+  let html = '<span style="font-size:11px;color:var(--text2);white-space:nowrap;">Experiments:</span>';
+  compareExps.forEach((exp, i) => {
+    const shortName = exp.name.replace(/^\d{6}_/, '').replace(/_\d{8}-\d{6}$/, '');
+    html += `<label style="font-size:11px;cursor:pointer;display:flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg3);border-radius:4px;">
+      <input type="checkbox" class="compare-exp-toggle" data-idx="${i}" checked onchange="updateCompareImages()" style="accent-color:var(--accent);">
+      <span title="${exp.name}">${shortName}</span>
+    </label>`;
+  });
+  el.innerHTML = html;
+}
+
+function getVisibleCompareExps() {
+  const toggles = document.querySelectorAll('.compare-exp-toggle');
+  if (toggles.length === 0) return compareExps;
+  const visible = [];
+  toggles.forEach(t => { if (t.checked) visible.push(compareExps[parseInt(t.dataset.idx)]); });
+  return visible;
+}
+
+function updateCompareImages() {
+  if (!compareMode || commonSampleIds.length === 0) return;
+  
+  const sampleId = commonSampleIds[currentSampleIndex];
+  const visibleExps = getVisibleCompareExps();
+  
+  // Build columns for each experiment
+  let gtHtml = '';
+  let depthHtml = '';
+  let confHtml = '';
+  let confMaskHtml = '';
+  
+  visibleExps.forEach(exp => {
+    const samples = compareSamplesMap[exp.key] || [];
+    const sample = samples.find(s => s.id === sampleId);
+    const shortName = exp.name.replace(/^\d{6}_/, '').replace(/_\d{8}-\d{6}$/, '');
+    const iterInfo = exp.currentIter ? ` (${exp.currentIter})` : '';
+    
+    // GT column
+    gtHtml += `<div class="compare-column">
+      <div class="compare-column-header" title="${exp.name}${iterInfo}">${shortName}<span style="font-weight:400;opacity:0.8;font-size:10px;margin-left:4px;">${iterInfo}</span></div>
+      <div class="compare-column-content">`;
+    if (sample && sample.gt.merge_rgb) {
+      const url = getCompareFileUrl(exp, sample.gt.merge_rgb);
+      gtHtml += `<div class="compare-img-item"><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+    } else {
+      gtHtml += '<div class="compare-img-item" style="color:var(--text2);font-size:11px;padding:20px;text-align:center;">No GT</div>';
+    }
+    gtHtml += '</div></div>';
+    
+    // Depth column
+    depthHtml += `<div class="compare-column">
+      <div class="compare-column-header" title="${exp.name}${iterInfo}">${shortName}<span style="font-weight:400;opacity:0.8;font-size:10px;margin-left:4px;">${iterInfo}</span></div>
+      <div class="compare-column-content">`;
+    if (sample) {
+      const frames = sample.frames || {};
+      const frameIds = Object.keys(frames).sort();
+      if (sample.pred.depth) {
+        const url = getCompareFileUrl(exp, sample.pred.depth);
+        depthHtml += `<div class="compare-img-item"><div class="compare-img-label">Depth</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+      }
+      frameIds.forEach(fid => {
+        if (frames[fid].depth) {
+          const url = getCompareFileUrl(exp, frames[fid].depth);
+          depthHtml += `<div class="compare-img-item"><div class="compare-img-label">F${fid}</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+        }
+      });
+      if (!sample.pred.depth && frameIds.length === 0) {
+        depthHtml += '<div style="color:var(--text2);font-size:11px;padding:20px;text-align:center;">No depth</div>';
+      }
+    }
+    depthHtml += '</div></div>';
+    
+    // Confidence column
+    confHtml += `<div class="compare-column">
+      <div class="compare-column-header" title="${exp.name}${iterInfo}">${shortName}<span style="font-weight:400;opacity:0.8;font-size:10px;margin-left:4px;">${iterInfo}</span></div>
+      <div class="compare-column-content">`;
+    if (sample) {
+      const frames = sample.frames || {};
+      const frameIds = Object.keys(frames).sort();
+      if (sample.pred.conf) {
+        const url = getCompareFileUrl(exp, sample.pred.conf);
+        confHtml += `<div class="compare-img-item"><div class="compare-img-label">Conf</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+      }
+      frameIds.forEach(fid => {
+        if (frames[fid].conf) {
+          const url = getCompareFileUrl(exp, frames[fid].conf);
+          confHtml += `<div class="compare-img-item"><div class="compare-img-label">F${fid}</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+        }
+      });
+      if (!sample.pred.conf && frameIds.length === 0) {
+        confHtml += '<div style="color:var(--text2);font-size:11px;padding:20px;text-align:center;">No conf</div>';
+      }
+    }
+    confHtml += '</div></div>';
+    
+    // Conf Mask column
+    confMaskHtml += `<div class="compare-column">
+      <div class="compare-column-header" title="${exp.name}${iterInfo}">${shortName}<span style="font-weight:400;opacity:0.8;font-size:10px;margin-left:4px;">${iterInfo}</span></div>
+      <div class="compare-column-content">`;
+    if (sample) {
+      const frames = sample.frames || {};
+      const frameIds = Object.keys(frames).sort();
+      if (sample.pred.conf_mask) {
+        const url = getCompareFileUrl(exp, sample.pred.conf_mask);
+        confMaskHtml += `<div class="compare-img-item"><div class="compare-img-label">Mask</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+      }
+      frameIds.forEach(fid => {
+        if (frames[fid].conf_mask) {
+          const url = getCompareFileUrl(exp, frames[fid].conf_mask);
+          confMaskHtml += `<div class="compare-img-item"><div class="compare-img-label">F${fid}</div><img src="${url}" onclick="openFullscreen('${url}')"></div>`;
+        }
+      });
+      if (!sample.pred.conf_mask && frameIds.length === 0) {
+        confMaskHtml += '<div style="color:var(--text2);font-size:11px;padding:20px;text-align:center;">No mask</div>';
+      }
+    }
+    confMaskHtml += '</div></div>';
+  });
+  
+  document.getElementById('compare-gt').innerHTML = gtHtml;
+  document.getElementById('compare-depth').innerHTML = depthHtml;
+  document.getElementById('compare-conf').innerHTML = confHtml;
+  document.getElementById('compare-conf-mask').innerHTML = confMaskHtml;
+  
+  // Setup scroll sync after updating content
+  setupScrollSync();
+}
+
+// Override loadSample for compare mode
+const originalLoadSample = loadSample;
+let _compareScrollRAF = 0;
+loadSample = function() {
+  if (compareMode) {
+    const mainEl = document.querySelector('.main');
+    const scrollY = mainEl ? mainEl.scrollTop : 0;
+    const compareView = document.getElementById('compare-view');
+    if (compareView && mainEl) compareView.style.minHeight = mainEl.scrollHeight + 'px';
+    currentSampleIndex = parseInt(document.getElementById('sample-select').value);
+    updateNavButtons();
+    updateCompareImages();
+    if (mainEl) mainEl.scrollTop = scrollY;
+    cancelAnimationFrame(_compareScrollRAF);
+    _compareScrollRAF = requestAnimationFrame(() => {
+      if (mainEl) mainEl.scrollTop = scrollY;
+      requestAnimationFrame(() => {
+        if (mainEl) mainEl.scrollTop = scrollY;
+        setTimeout(() => {
+          if (compareView && mainEl) compareView.style.minHeight = mainEl.scrollHeight + 'px';
+        }, 200);
+      });
+    });
+  } else {
+    originalLoadSample();
+  }
+};
+
+// Override nav functions for compare mode
+const originalPrevSample = prevSample;
+prevSample = function() {
+  if (compareMode) {
+    if (currentSampleIndex > 0) {
+      document.getElementById('sample-select').value = currentSampleIndex - 1;
+      loadSample();
+    }
+  } else {
+    originalPrevSample();
+  }
+};
+
+const originalNextSample = nextSample;
+nextSample = function() {
+  if (compareMode) {
+    if (currentSampleIndex < commonSampleIds.length - 1) {
+      document.getElementById('sample-select').value = currentSampleIndex + 1;
+      loadSample();
+    }
+  } else {
+    originalNextSample();
+  }
+};
+
+const originalUpdateNavButtons = updateNavButtons;
+updateNavButtons = function() {
+  if (compareMode) {
+    document.getElementById('prev-btn').disabled = currentSampleIndex <= 0;
+    document.getElementById('next-btn').disabled = currentSampleIndex >= commonSampleIds.length - 1;
+  } else {
+    originalUpdateNavButtons();
+  }
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const compareParam = urlParams.get('compare');
+  const expGroup = urlParams.get('group');
+  const expName = urlParams.get('name');
+  
+  // Check for compare mode
+  if (compareParam) {
+    const expList = compareParam.split(',').filter(e => e.trim());
+    if (expList.length > 0) {
+      await loadExperiments();
+      await initCompareMode(expList);
+      return;
+    }
+  }
+  
+  // Normal mode
+  if (expGroup) {
+    filterGroup = expGroup;
+  }
+  
+  await loadExperiments();
+  
+  if (expGroup && expName) {
+    const exp = experiments.find(e => e.group === expGroup && e.name === expName);
+    if (exp) {
+      await selectExp(exp.group, exp.name);
+    }
+  }
+});
+</script>
+</body>
+</html>

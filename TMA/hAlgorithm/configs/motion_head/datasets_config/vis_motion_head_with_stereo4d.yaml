@@ -1,0 +1,89 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/test_mf_with_tracking_2048.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv_4d.kubric4d_track_dataset.Kubric4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/test_mf_stereo_with_trajs.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: dynamicreplica
+    sampling_strategy: [5]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv_4d.dynamicreplica_track_dataset.DynamicReplicaTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+
+  # Stereo4D - 5 scenes for visualization
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/Stereo4D/processed_data/stereo4d_test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/nasTeam2/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: stereo4d
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv_4d.stereo4d_track_dataset.Stereo4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 20
+      seed: null

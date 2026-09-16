@@ -1,0 +1,178 @@
+datasets:
+  # name scannet
+  # mf_data_scene 2510
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 21451
+  # mf_data_scene_frames max 8260, min 6, mean 965, median 768
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 20
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: 0
+      shuffle: false
+  
+  # name scannet
+  # mf_data_scene 2510
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 21451
+  # mf_data_scene_frames max 8260, min 6, mean 965, median 768
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train_mf_split_10.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 8.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scannet
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 120
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: 0
+      shuffle: false
+  
+  # name scpp
+  # mf_data_scene 49
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1373
+  # mf_data_scene_frames max 1351, min 0, mean 664, median 631
+  # mf_data_scene_views max 690, min 1, mean 15, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_val_mf_arkit_render.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scpp
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: first:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: 10
+    clip_step: 6
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.KeepFirstRandomClipSampler
+      view_num: 4
+      seed: 0
+      shuffle: false
+    
+    depth_name: render_depth
+    rbg_name: rgb
+  
+  # name hablendeder_objs
+  # mf_data_scene 727
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 727
+  # mf_data_scene_frames max 216, min 8, mean 151, median 144
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250616_part1_10.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_objs
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:1 # NOTE: 第一个场景有问题
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: 0
+      shuffle: false
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+  
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: iphone
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: [0]
+    # mf_scene: "一个手握小风扇"
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.iphone_dataset.IphoneDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 16
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+      seed: 0
+
+    depth_name: lidar_depth
+    # delete_camera: true
+  
+    # confidence: 1
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Zed2FT/data/20250429_maxwell/patagonia/20250429_182841_pose.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: patagonia
+    sampling_strategy: [0, 1]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [0]
+
+    type: hAlgorithm.datasets_mv.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 4
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+      seed: null
+    
+    lidar_name: lidar_depth
+
+    
+    
+
+    

@@ -1,0 +1,188 @@
+datasets:
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 46
+  # mf_data_scene_frames max 100, min 56, mean 90, median 99
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: all
+    mf_sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 20
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    mf_to_sf: true
+  
+  # 室内，场景，MVS
+  # name scpp
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 330
+  # mf_data_scene_frames max 1351, min 387, mean 780, median 780
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_val_mf_arkit_render.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scpp
+    sampling_strategy: all
+    mf_sampling_strategy: [0]
+    mf_scene_sampling_strategy: first:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: 10
+    clip_step: 6
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    depth_name: render_depth
+    rbg_name: rgb
+
+    mf_to_sf: true
+  
+  # 室内，目标，仿真
+  # name hablendeder_objs
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 214
+  # mf_data_scene_frames max 216, min 108, mean 169, median 180
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250616_part1_10.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_objs
+    sampling_strategy: all
+    mf_sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:1 # NOTE: 第一个场景有问题
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    mf_to_sf: true
+
+  # 室外，场景，仿真
+  # name mvssynth
+  # mf_data_scene 120
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1560
+  # mf_data_scene_frames max 100, min 100, mean 100, median 100
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: [0, 25, 50]
+    mf_scene_sampling_strategy: end:1
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    mf_to_sf: true
+  
+  # name sintel
+  # mf_data_scene 23
+  # mf_to_mv False sf_to_mf False
+  # mf_data_scene_frames max 49, min 19, mean 45, median 49
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Sintel/test_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 35.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: sintel
+    sampling_strategy: all
+    mf_sampling_strategy: [0]
+    mf_scene_sampling_strategy: [20]
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    mf_to_sf: true
+  
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: iphone
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: [0]
+    # mf_scene: "一个手握小风扇"
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.iphone_dataset.IphoneDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 16
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+      seed: 0
+
+    depth_name: lidar_depth
+    # delete_camera: true
+  
+    # confidence: 1
+    mf_to_sf: true
+  

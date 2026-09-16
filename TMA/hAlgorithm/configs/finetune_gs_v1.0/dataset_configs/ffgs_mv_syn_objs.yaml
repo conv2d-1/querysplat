@@ -1,0 +1,35 @@
+datasets:
+  - data_path: /mnt/home/stang/workspace/TMA/results/test_mv_250701_syn/rc_vggt_250618_obj_mvpdcg_mean_bs1_glbpoints_backup_mvtest_20250701-215702/outputs/iter_000001/syn_objs/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    name: syn_objs
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: val
+
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    only_pointmap: true
+    with_pointmap: true
+    # min_depth: 0.001
+    # max_depth: 64.0
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 6
+
+    rbg_name: rgb
+    # depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+
+    info_frame_ids: true
+

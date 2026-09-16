@@ -1,0 +1,24 @@
+datasets:
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/Hasim_pinhole_4D/hasim_4d_mf_train_split_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/nasTeam2/AI/datasets/TMD
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hasim
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.hasim_track_dataset.HaSimTrackDataset
+    skip_static_threshold: 0.02
+    static_traj_ratio: 1.2
+    mf_to_mv: true
+    clip_maxlen: 10
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null

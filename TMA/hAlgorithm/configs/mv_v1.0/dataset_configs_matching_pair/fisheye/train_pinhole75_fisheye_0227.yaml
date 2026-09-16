@@ -1,0 +1,178 @@
+datasets:
+  # 室内，目标，仿真
+  # name hablendeder_fisheye_objs_v2
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_260120/hasim_hablender_fisheye_v2_0203_h5.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/FishEye_v2/jsons/fisheye_v2_0227_exclusive_h5.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_fisheye_objs_v2
+    sampling_strategy: all
+    mf_scene_sampling_strategy: "first:-5"
+    fisheye_crop_pixel_normal: 5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_fisheye.base_dataset_mv.BaseDatasetFisheyeMV
+    mf_to_mv: true
+    clip_maxlen: 12
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 2
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: normal_svd
+    # normal_hdf5: normal_svd_hdf5
+    camera_type: "FISHEYE_EQUIDISTANT"
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+    mf_to_sf: false
+
+
+  # 室外，场景，MVS
+  # name megadepth
+  # mf_data_scene 768
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3629
+  # mf_data_scene_frames max 100, min 6, mean 97, median 100   
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MegaDepth/megadepth_mf.json
+    pair_path: /mnt/netdata/Team/AI/datasets/TMD/MegaDepth/pair_overlap_35.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: megadepth_35
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    pair_sampling_strategy: all
+    mvs_mode: true
+    with_warp: false
+    prob: 0.125
+    type: hAlgorithm.datasets_match.pair_dataset.PairMatchingDataset
+    match_scales: [1, 2, 3.5, 4]
+    mf_to_sf: false
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MegaDepth/megadepth_mf.json
+    pair_path: /mnt/netdata/Team/AI/datasets/TMD/MegaDepth/pair_overlap_1.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: megadepth_1
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    pair_sampling_strategy: all
+    mvs_mode: true
+    with_warp: false
+    prob: 0.125
+    type: hAlgorithm.datasets_match.pair_dataset.PairMatchingDataset
+    match_scales: [1, 2, 3.5, 4]
+    mf_to_sf: false
+
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 768
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3629
+  # mf_data_scene_frames max 100, min 6, mean 97, median 100   
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  # Total 4703832 Pairs From 7329693 Candidates. Mean 6124 Max 9900 Min 0
+  # inf mask: nan
+  # original json /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+  - data_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_251016/hypersim_new_total_mf.json
+    overlap_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/FrameOverlap/hypersim/hypersim_new_total_mf.h5
+    overlap_conditions: [[20, 100]]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-10
+    mvs_mode: false
+    with_warp: false
+    prob: 0.125
+    type: hAlgorithm.datasets_match.pair_dataset.PairMatchingDataset
+    match_scales: [1, 2, 3.5, 4]
+    mf_to_sf: false
+  - data_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_251016/hypersim_new_total_mf.json
+    overlap_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/FrameOverlap/hypersim/hypersim_new_total_mf.h5
+    overlap_conditions: [[5, 20]]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim_5
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-10
+    mvs_mode: false
+    with_warp: false
+    prob: 0.125
+    type: hAlgorithm.datasets_match.pair_dataset.PairMatchingDataset
+    match_scales: [1, 2, 3.5, 4]
+    mf_to_sf: false
+
+  # 室内&室外，场景&目标，MVS
+  # name blendedmvs
+  # mf_data_scene 113
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 17819
+  # mf_data_scene_frames max 836, min 14, mean 157, median 96      
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  # Total 3760270 Pairs From 5978067 Candidates. Mean 33276 Max 454129 Min 182
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/BlendedMVS/train_mf_reposed.json
+    overlap_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/FrameOverlap/blendedmvs/train_mf_reposed.h5
+    overlap_conditions: [[20, 100]]
+    sampling_strategy: all
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: blendedmvs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    mvs_mode: false
+    with_warp: false
+    prob: 0.25 # mvs
+    
+    type: hAlgorithm.datasets_match.pair_dataset.PairMatchingDataset
+    match_scales: [1, 2, 3.5, 4]
+    mf_to_sf: false
+    mf_scene_delete: [ # NOTE: ROMA
+      "5692a4c2adafac1f14201821",
+      "5864a935712e2761469111b4",
+      "59f87d0bfa6280566fb38c9a",
+      "58a44463156b87103d3ed45e",
+      "5c2b3ed5e611832e8aed46bf",
+      "5bf03590d4392319481971dc",
+      "00000000000000000000001a",
+      "00000000000000000000000c",
+      "000000000000000000000000",
+    ]

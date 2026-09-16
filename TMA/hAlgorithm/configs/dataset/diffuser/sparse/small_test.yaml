@@ -1,0 +1,5 @@
+datasets:
+  - data_path: /mnt/personal/ts/data/Marigold/data_split/hypersim/val80.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    pipeline: hAlgorithm/configs/dataset/diffuser/pipeline/hypersim.py

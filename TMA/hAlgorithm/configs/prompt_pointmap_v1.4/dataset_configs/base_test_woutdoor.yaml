@@ -1,0 +1,29 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim/data_split_marigold_v2/test.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: first:500
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    mf_to_sf: true

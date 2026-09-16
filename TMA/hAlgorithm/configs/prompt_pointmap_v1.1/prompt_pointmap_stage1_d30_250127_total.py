@@ -1,0 +1,135 @@
+data = dict(
+    train="hAlgorithm/configs/prompt_pointmap_v1.1/stage1_dataset_configs/total_train_700w.yaml",
+    val="hAlgorithm/configs/prompt_pointmap_v1.1/stage1_dataset_configs/base_test.yaml",
+    vis="hAlgorithm/configs/prompt_pointmap_v1.1/stage1_dataset_configs/total_vis.yaml",
+    train_basic=dict(max_depth=30),
+    val_basic=dict(max_depth=30),
+)
+
+model = dict(
+    type="hAlgorithm.modules.pipelines.depth_prompt_pointmap_pipeline_v2.DepthPromptPointMapPipeline",
+    head=dict(
+        type="hAlgorithm.modules.models.promptda.pointmap_dpt.PointMapDPTHead",
+        nclass=1,
+        use_bn=False,
+        use_clstoken=False,
+        output_act="",  # NOTE
+        with_uv=False,
+    ),
+    encoder_pretrain="/mnt/netdata/Team/AI/personal/ts/weights/moge/dinov2_vitb14_pretrain.pth",
+    head_pretrain=None,
+    encoder="vitb",
+    patch_size=14,
+    align_name="depth_raw",
+    align_mask_name="depth_raw_mask",
+    match_input_res=True,
+    target_name="pointmap",
+    target_mask_name="depth_mask",
+    prompt_name="sparse_pointmap",  # NOTE: without interpolate
+    prompt_mask_name=None,
+    prompt_scale_name="sparse_pointmap_max_range",
+    prompt_center_name=None,
+    l1_loss=dict(
+        type="hAlgorithm.modules.losses.global_point_z_weighted_loss.GlobalPointZWeightedLossV2",
+        loss_weight=1.0,
+        zweighted=False,  # NOTE
+        threshold=None,
+    ),
+    grad_loss=dict(
+        type="hAlgorithm.modules.losses.grad_l1_loss.GradL1Loss",
+        loss_weight=8.0,
+        scale_level=4,
+    ),
+    normal_loss=dict(
+        type="hAlgorithm.modules.losses.normal_cosine_Loss.NormalCosineLossV2",
+        # loss_weight=0.1,
+        start_iter=10000,
+        loss_weight=dict(
+            default=0.0,
+            hypersim=0.1,
+            blendedmvs=0.1,
+            kenburns=0.1,
+            diml=0.1,
+            dynamicstereo=0.1,
+            scannet=0.1,
+        ),
+    ),
+    warmup_iters=-1,
+    target_clip=None,
+    post_align=True,
+    prompt_set_none=True,  # NOTE: prompt depth = None
+)
+
+trainer = dict(
+    type="hAlgorithm.modules.trainers.moge_trainer.MogeTrainer",
+    max_epoch=None,
+    max_iter=200000,
+    num_workers=8,
+    batch_size=32,
+    gradient_accumulation_steps=1,
+    set_random_size=True,
+    max_grad_norm=100,
+    lr=None,
+    lr_scheduler=dict(
+        type="hAlgorithm.modules.lr_schedulers.poly_lr_updater.PolyLrUpdater",
+        base_lr=1e-4,
+        max_iters=200000,
+        warmup_iters=1000,
+        warmup="linear",
+        warmup_ratio=1e-6,
+        power=0.9,
+        min_lr=1e-8,
+    ),
+    # max_grad_norm=1,
+    optimizer=dict(
+        type="AdamW",
+        pretrained=dict(lr=1e-5, betas=(0.9, 0.999), weight_decay=1e-3, eps=1e-10),
+        depth_head=dict(lr=1e-4, betas=(0.9, 0.999), weight_decay=0.01, eps=1e-10),
+        strict_match=True,
+    ),
+    eval_metrics=dict(
+        type="hAlgorithm.modules.metrics.multi_eval_metrics.MultiEvalMetrics",
+        metrics=[
+            dict(
+                type="hAlgorithm.modules.metrics.depthmap_eval_metrics.DepthEvalMetrics",
+                target_name="depth_raw",
+                valid_mask_name="depth_raw_mask",
+                gt_min_depth=1e-3,
+                gt_max_depth=200.0,
+                metrics=[
+                    "abs_relative_difference",
+                    "squared_relative_difference",
+                    "rmse_linear",
+                    "rmse_log",
+                    "log10",
+                    "delta1_acc",
+                    "delta2_acc",
+                    "delta3_acc",
+                    "i_rmse",
+                    "silog_rmse",
+                ],
+            ),
+            dict(
+                type="hAlgorithm.modules.metrics.pointmap_eval_metrics.PointMapEvalMetrics",
+                valid_mask_name="depth_mask",
+                gt_min_depth=1e-3,
+                gt_max_depth=200.0,
+                metrics=[
+                    "pointmap_normal_cos",
+                ],
+            ),
+        ],
+    ),
+    main_eval_metric="abs_relative_difference",
+    main_eval_metric_goal="minimize",
+    in_evaluation=False,
+    in_visualize=False,
+    backup_period=0,
+    val_period=1000,
+    save_period=1000,
+    vis_period=1000,
+    accelerator_dynamic_batch=True,
+    accelerator_dynamic_batch_key="image",
+    # load_from="/mnt/netdata/Team/AI/weights/huggingface/depth_anything/depth_anything_v2_vitb.pth",
+    # mem=[200,1024,1024,64], # fp16 显存太少
+)

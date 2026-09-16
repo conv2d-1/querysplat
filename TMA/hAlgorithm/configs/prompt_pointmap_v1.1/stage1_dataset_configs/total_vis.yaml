@@ -1,0 +1,142 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim/data_split_marigold_v2/test.json
+    sampling_strategy: first:10
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+    prob: 1.0
+  
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/BlendedMVS/indoor_test.json
+  #   sampling_strategy: first:2
+  #   sparse_depth_ratio: 0.05
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 1.0
+  #   min_depth: 0.001
+  #   max_depth: 200.0
+  #   point_normalize_mode: "distance"
+  #   interpolate_version: null
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/blendedmvs.py
+  #   prob: 1.0
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/KenBurns/indoor_test.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 100.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/kenburns.py
+    prob: 1.0
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DIML/test.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/diml.py
+    prob: 1.0
+  
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/Taskonomy/test.json
+  #   sampling_strategy: first:5
+  #   sparse_depth_ratio: 0.05
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 512.0
+  #   min_depth: 0.001
+  #   max_depth: 200.0
+  #   point_normalize_mode: "distance"
+  #   interpolate_version: null
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/taskonomy.py
+  #   prob: 1.0
+  
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/DIODE/test_indoor.json
+  #   sampling_strategy: first:5
+  #   sparse_depth_ratio: 0.05
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 1.0
+  #   min_depth: 0.001
+  #   max_depth: 200.0
+  #   point_normalize_mode: "distance"
+  #   interpolate_version: null
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/diode.py
+  #   prob: 1.0
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/test.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/dynamicstereo.py
+    prob: 1.0
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/AgiBotWorld/train.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/agibot.py
+    prob: 1.0 # depth camera
+  
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Matterport3D/train.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/matterport3d.py
+    prob: 1.0 # depth camera
+  
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/STD/train.json
+    sampling_strategy: first:2
+    sparse_depth_ratio: 0.05
+    only_pointmap: false
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    interpolate_version: null
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/std.py
+    prob: 1.0 # depth camera

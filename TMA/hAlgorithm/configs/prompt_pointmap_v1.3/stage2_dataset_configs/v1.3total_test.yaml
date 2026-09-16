@@ -1,0 +1,92 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Sintel/test.json
+    name: sintel
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/VKitti/test.json
+    name: vkitti
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/NYUV2/test.json
+    name: nyuv2
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ibims/test.json
+    name: ibims
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim/data_split_marigold_v2/test.json
+    name: hypersim
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DIODE/test.json
+    name: diode
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.5
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/diode.py
+
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/7-Scenes/test_mf.json
+  #   name: 7scenes
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 1.0
+  #   min_depth: 0.001
+  #   max_depth: 25.0
+  #   point_normalize_mode: "distance"
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+  #   sampling_strategy: all
+  #   mf_scene_sampling_strategy: all
+  #   type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+  #   mf_to_sf: true

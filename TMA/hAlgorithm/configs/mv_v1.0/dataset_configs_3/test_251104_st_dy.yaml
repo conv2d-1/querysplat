@@ -1,0 +1,202 @@
+datasets:
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 46
+  # mf_data_scene_frames max 100, min 56, mean 90, median 99
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: [0, 1, 2, 3, 4]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 20
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+  
+  # 室内，场景，MVS
+  # name scannet
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 243
+  # mf_data_scene_frames max 6170, min 6, mean 2851, median 2256
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train_mf_split_10.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 8.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scannet
+    sampling_strategy: [0, 1, 2, 3, 4]
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 120
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+  
+  # 室内，场景，MVS
+  # name scpp
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 330
+  # mf_data_scene_frames max 1351, min 387, mean 780, median 780
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_val_mf_arkit_render.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scpp
+    sampling_strategy: [0, 1, 2, 3, 4]
+    mf_scene_sampling_strategy: first:10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: 10
+    clip_step: 6
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    depth_name: render_depth
+    rbg_name: rgb
+  
+  # 室内，目标，仿真
+  # name hablendeder_objs
+  # mf_data_scene 10
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 214
+  # mf_data_scene_frames max 216, min 108, mean 169, median 180
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250616_part1_10.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_objs
+    sampling_strategy: [0, 1, 2, 3, 4]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    # clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+  # 室内，场景，MVS
+  # name nrgbd
+  # mf_datascene 9
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 47
+  # mf_data_scene_frames max 1676, min 395, mean 1218, median 1211
+  # mf_data_scene_views max 1, min 1, mean 1, median 1_
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/NRGBD/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: nrgbd
+    sampling_strategy: [0, 1]
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 250
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+  
+  # 室内，场景，MVS
+  # name s7
+  # mf_data_scene 28
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 184
+  # mf_data_scene_frames max 1000, min 500, mean 928, median 1000
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/7-Scenes/train_mf_0418.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: s7
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 150
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+  
+  # name sintel
+  # mf_data_scene 23
+  # mf_to_mv False sf_to_mf False
+  # mf_data_scene_frames max 49, min 19, mean 45, median 49
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Sintel/test_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 35.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: sintel
+    mf_scene_sampling_strategy: all
+    # sampling_strategy: [0, 10, 20, 30, 40]
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_step: 5
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 4
+
+    

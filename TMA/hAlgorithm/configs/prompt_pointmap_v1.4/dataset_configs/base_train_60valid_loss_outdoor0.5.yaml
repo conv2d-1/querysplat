@@ -1,0 +1,31 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/FilterLoss/Hypersim_train_range_60_valid_filter_loss.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+    prob: 1.0
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: first:-500
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    mf_to_sf: true
+    prob: 0.5
+    

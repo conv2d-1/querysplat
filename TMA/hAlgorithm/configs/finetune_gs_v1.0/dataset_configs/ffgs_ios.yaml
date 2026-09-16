@@ -1,0 +1,39 @@
+datasets:
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+    # mf_scene: 一个手握小风扇
+    # mf_frame_ids: [0, 25, 51, 76, 102, 128, 153, 179]
+    # mf_scene: 一个瓷茶杯
+    # mf_frame_ids: [0, 25, 51, 77, 103, 129, 155, 181]
+    # mf_scene: 一大瓶立白洗洁精
+    # mf_frame_ids: [0, 25, 51, 76, 102, 127, 153, 178]
+    # mf_scene: 一大盒趣多多巧克力味饼干
+    # mf_frame_ids: [0, 26, 53, 80, 107, 134, 161, 188]
+    # mf_scene: 一罐可乐
+    # mf_frame_ids: [0, 25, 50, 75, 100, 125, 150, 175]
+
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    only_pointmap: true
+    with_pointmap: true
+    # min_depth: 0.001
+    # max_depth: 64.0
+    type: hAlgorithm.datasets_mv.iphone_dataset.IphoneDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 8
+
+    depth_name: lidar_depth
+    # confidence: 0
+
+    
+

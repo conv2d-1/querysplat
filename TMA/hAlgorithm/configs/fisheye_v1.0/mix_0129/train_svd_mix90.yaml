@@ -1,0 +1,141 @@
+datasets:
+  # 室内，目标，仿真
+  # name hablendeder_fisheye_objs_v2
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_260120/hasim_hablender_fisheye_v2_0128_h5.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_fisheye_objs_v2
+    sampling_strategy: all
+    mf_scene_sampling_strategy: "first:-5"
+    fisheye_crop_pixel_normal: 5
+    prob: 1.0
+
+    type: hAlgorithm.datasets_fisheye.base_dataset_mv.BaseDatasetFisheyeMV
+    mf_to_mv: true
+    clip_maxlen: 1
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 1
+      seed: null
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: normal_svd
+    normal_hdf5: normal_svd_hdf5
+    camera_type: "FISHEYE_EQUIDISTANT"
+    # normal_name: none
+    mask_name: none
+    sem_name: none
+
+    mf_to_sf: false
+
+  # 室内，场景，仿真
+  # name hypersim
+  # mf_data_scene 768
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 3629
+  # mf_data_scene_frames max 100, min 6, mean 97, median 100   
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  # inf mask: nan
+  # original json /mnt/netdata/Team/AI/datasets/TMD/Hypersim_new/total_mf.json
+  - data_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_251016/hypersim_new_total_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hypersim
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-10
+    prob: 0.3
+
+    normal_name: normal_svd
+    depth_name: none
+    with_inf_mask: false
+    inf_mask_depth_nan: true
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 1
+      seed: null
+    
+    mf_to_sf: true
+  
+  # 室外，场景，仿真
+  # name mvssynth
+  # mf_data_scene 120
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 1560
+  # mf_data_scene_frames max 100, min 100, mean 100, median 100
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  # original json /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+  # inf mask: nan
+  - data_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_251016/mvssynth_train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-1
+    prob: 0.3
+
+    normal_name: normal_svd
+    depth_name: none
+    with_inf_mask: false
+    inf_mask_depth_nan: true
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 1
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 1
+      seed: null
+    
+    mf_to_sf: true
+  
+  # inf mask: sem[sky]
+  # original json /mnt/netdata/Team/AI/datasets/TMD/Urbansyn/train.json
+  - data_path: /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_251016/urbansyn_train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    name: urbansyn
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    type: hAlgorithm.datasets.urbansyn_dataset.UrbansynDataset
+    prob: 0.3
+
+    sem_name: none
+    depth_name: none
+    normal_name: normal_svd
+    with_inf_mask: false
+    inf_mask_sem_names: ['sky']
+    depth_invalid_sem_names: ['sky']
+  

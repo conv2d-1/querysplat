@@ -1,0 +1,14 @@
+datasets:
+  - type: hAlgorithm.datasets_seg.custom_seg_dataset.KosmoSegDataset
+    data_root: /mnt/nasTeam/Kosmo/processed_data/kosmo
+    data_path: /mnt/nasTeam/Kosmo/processed_data/kosmo/20251223_5_创意园/5500_创意园42min/gt_seg/right_sharp/data_seg_创意园_right_sharp.json
+    phase: train
+    name: kosmo_seg_train
+    sampling_strategy: all
+    return_masks: true
+    return_boxes: true
+    mask_format: bitmap
+    box_format: xyxy
+    seed: 42
+    prob: 1.0
+    pipeline: hAlgorithm/configs/seg/data/pipeline_seg.py

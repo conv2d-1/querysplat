@@ -1,0 +1,379 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Hypersim/train_range_60_valid.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+    with_inf_mask: true
+    inf_mask_depth_nan: true
+    prob: 1.0 # syn
+    
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/BlendedMVS/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/blendedmvs.py
+    with_inf_mask: true
+    inf_mask_min: 0.001
+    prob: 0.5 # mvs
+
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/KenBurns/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 100.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/kenburns.py
+    with_inf_mask: true
+    inf_mask_max: 400.0
+    prob: 1.0 # syn
+    
+  
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/DIML/train.json
+  #   sampling_strategy: all
+  #   sparse_depth_ratio: 0.05
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 1000.0
+  #   min_depth: 0.001
+  #   max_depth: 5.9
+  #   point_normalize_mode: "distance"
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/diml.py
+  #   prob: 0.5 # mvs
+    
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Taskonomy/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 512.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/taskonomy.py
+    prob: 0.1 # lidar
+    
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DIODE/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 60.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/diode.py
+    prob: 0.1 # lidar
+    
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/DynamicStereo/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 10.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/dynamicstereo.py
+    prob: 1.0 # syn
+    
+  
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 8.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/scannet.py
+    prob: 0.5 # mvs
+
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/Habitat-Sim-v2/train_mf_v2_0401_part1_filter_black_50.json,
+      /mnt/netdata/Team/AI/datasets/TMD/Habitat-Sim-v2/train_mf_v2_0401_part2_filter_black_50.json,
+      /mnt/netdata/Team/AI/datasets/TMD/Habitat-Sim-v2/train_mf_v2_0403_part1_filter_black_50.json,
+      /mnt/netdata/Team/AI/datasets/TMD/Habitat-Sim-v2/train_mf_v2_0403_part2_filter_black_50.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: habitat
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    mf_to_sf: true
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MVS-synth/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: mvssynth
+    sampling_strategy: first:-500
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    with_inf_mask: true
+    inf_mask_depth_nan: true
+    mf_to_sf: true
+    prob: 0.5
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/VKitti/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    name: vkitti
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    type: hAlgorithm.datasets.vkitti_dataset.VkittiDataset
+    sem_name: sem
+    with_inf_mask: true
+    inf_mask_sem_names: ['sky']
+    prob: 0.5
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/train_mf.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    with_inf_mask: true
+    inf_mask_min: 0.001
+    mf_to_sf: true
+    prob: 0.25
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/StaticThings3D/train_mf_stereo.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: staticthings3d
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    with_inf_mask: true
+    inf_mask_max: 200.0
+    mf_to_sf: true
+    prob: 0.25
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Synthia/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    name: synthia
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    type: "hAlgorithm.datasets.synthia_dataset.SynthiaDataset"
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    sem_name: sem
+    with_inf_mask: true
+    inf_mask_sem_names: ['sky']
+    prob: 0.5
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/MatrixCity/filter100/train_filter100.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    name: matrixcity
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    normal_name: 'null'
+    batch_scale: 0.01 # set batch size to 1
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    prob: 0.25
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Urbansyn/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    name: urbansyn
+    with_edge_mask: false
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+    type: hAlgorithm.datasets.urbansyn_dataset.UrbansynDataset
+    sem_name: sem
+    with_inf_mask: true
+    inf_mask_sem_names: ['sky']
+    depth_invalid_sem_names: ['sky']
+    prob: 0.5
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/TartanAir/train_mf.json
+    sampling_strategy: first:-500
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: tartanair
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.tartanair_dataset.TartanAirDataset4D"
+    sem_name: sem
+    with_inf_mask: true
+    inf_mask_sem_names: ['sky']
+    mf_to_sf: true
+    prob: 0.5
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/EDEN/train_mf.json
+    sampling_strategy: first:-500
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 200.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: eden
+    mf_scene_sampling_strategy: all
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    with_inf_mask: true
+    inf_mask_min: 0.001
+    mf_to_sf: true
+    prob: 0.5
+
+  - data_path: [
+      # /mnt/netdata/Team/AI/datasets/TMD/HaBlender/train_mf_v3_surround_objs.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_polyhaven_20250603.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Front3D/front3d_objs_surround_hemisphere_objaverse_20250605.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablender_objs
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_sf: true
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: none
+    mask_name: none
+    sem_name: none
+
+  # - data_path: /mnt/netdata/Team/AI/datasets/TMD/HaBlender/train_mf_v3_random_trajectory_large_noise.json
+  #   only_pointmap: true
+  #   with_pointmap: true
+  #   depth_scale: 1.0
+  #   min_depth: 0.001
+  #   max_depth: 64.0
+  #   point_normalize_mode: "distance"
+  #   data_root: /mnt/netdata/Team/AI/datasets/TMD/
+  #   pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+  #   name: hablender_traj
+  #   sampling_strategy: all
+  #   mf_scene_sampling_strategy: all
+  #   prob: 1.0
+  #   type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+  #   hdf5: false
+  #   rbg_name: colors
+  #   depth_name: depth
+  #   normal_name: none
+  #   mask_name: none
+  #   mf_to_sf: true
+
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/random_traj_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/random_traj_noise_20250526.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/infinigen_scenes_v1_random_traj_20250529_part0.json,
+      /mnt/netdata/Team/AI/datasets/TMD/HaSim/HaBlender/Infinigen/infinigen_scenes_v2_random_traj_20250529.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: infinigen
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: none
+    mask_name: none
+    sem_name: none
+    mf_to_sf: true

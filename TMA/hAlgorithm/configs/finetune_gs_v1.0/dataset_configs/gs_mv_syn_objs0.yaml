@@ -1,0 +1,72 @@
+datasets_train:
+  - data_path: /mnt/home/stang/workspace/TMA/results/test_mv_250701_syn/rc_vggt_250618_obj_mvpdcg_mean_bs1_glbpoints_backup_mvtest_20250701-215702/outputs/iter_000001/syn_objs/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: train
+
+
+datasets_val:
+  - data_path: /mnt/home/stang/workspace/TMA/results/test_mv_250701_syn/rc_vggt_250618_obj_mvpdcg_mean_bs1_glbpoints_backup_mvtest_20250701-215702/outputs/iter_000001/syn_objs/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: val
+
+datasets_vis:
+  - data_path: /mnt/home/stang/workspace/TMA/results/test_mv_250701_syn/rc_vggt_250618_obj_mvpdcg_mean_bs1_glbpoints_backup_mvtest_20250701-215702/outputs/iter_000001/syn_objs/data_info_with_depth.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: syn
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    rbg_name: rgb
+    depth_name: depth
+    # normal_name: "normals"
+    normal_name: none
+    mask_name: none
+
+    intrinsics_name: pred_intrinsic
+    extrinsics_name: pred_extrinsic
+    depth_name: pred_depth
+    lidar_name: pred_depth
+
+    mf_scene: fa61b971-a2a1-4b3b-8ba4-1725c77d9be2
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata_hasim_mini.json
+    meta_json_split: val

@@ -1,0 +1,66 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/EDEN/train_mf.json
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    interpolate_k: 1
+    name: "eden"
+    type: "hAlgorithm.datasets.base_dataset.BaseDataset"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/train_mf.json
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 65.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    interpolate_k: 1
+    name: "kubric4d"
+    type: "hAlgorithm.datasets.kubric4d_dataset.Kubric4DDataset"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/NRGBD/train_mf.json
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    interpolate_k: 1
+    name: "nrgbd"
+    type: "hAlgorithm.datasets.kubric4d_dataset.BaseDataset"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base.py
+
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train_mf.json
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1000.0
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    with_edge_mask: false
+    interpolate_k: 1
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/scannet.py

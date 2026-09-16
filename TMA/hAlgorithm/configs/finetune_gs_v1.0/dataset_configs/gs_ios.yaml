@@ -1,0 +1,44 @@
+datasets_train:
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: trainval # 坐标系统一后，GS 再切分
+
+    depth_name: lidar_depth
+
+datasets_val:
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+    depth_name: lidar_depth
+
+datasets_vis:
+  - data_path: /mnt/naspersonal/zm/mvs3.0/test_mf_v2_v3_compare_smallobj.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: ios
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: 一个手握小风扇
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+    depth_name: lidar_depth

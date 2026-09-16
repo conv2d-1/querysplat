@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 200  # 设置最大行长度
+
+[tool.isort]
+# 配置 isort 工具以与 black 协同工作
+profile = "black"  # 使用 black 兼容模式
+line_length = 22300  # 设置最大行长度
+
+[tool.flake8]
+max-line-length = 200  # 修改最大行长度为 300
+ignore = ["I201", "I202", "I100", "E203", "E501", "E402", "W503"]  # 忽略

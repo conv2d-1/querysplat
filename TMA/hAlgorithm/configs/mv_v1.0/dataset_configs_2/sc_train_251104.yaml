@@ -1,0 +1,65 @@
+datasets:
+  # 室内，场景，MVS
+  # name scannet                           
+  # mf_data_scene 2500
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 21208
+  # mf_data_scene_frames max 8260, min 6, mean 957, median 767
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/ScanNet/train_mf_split.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 8.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scannet
+    sampling_strategy: all
+    mf_scene_sampling_strategy: first:-10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 10
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+  
+  # 室内，场景，MVS
+  # name scpp
+  # mf_data_scene 897
+  # mf_to_mv True sf_to_mf False
+  # mf_data_scene_mf 93463
+  # mf_data_scene_frames max 4705, min 104, mean 833, median 753
+  # mf_data_scene_views max 1, min 1, mean 1, median 1
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_train_mf_arkit_render.json,
+      /mnt/netdata/Team/AI/datasets/TMD/ScanNetPP_Processed/iphone_test_mf_arkit_render.json
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: scpp
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_mv.base_dataset.BaseDatasetMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null
+    
+    depth_name: render_depth
+    rbg_name: rgb
+  

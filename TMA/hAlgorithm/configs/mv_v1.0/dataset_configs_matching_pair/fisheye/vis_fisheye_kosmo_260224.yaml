@@ -1,0 +1,187 @@
+datasets:
+  # 室内，目标，仿真
+  # name hablendeder_fisheye_objs
+  - data_path: [
+      /mnt/netdata/Team/AI/datasets/TMA_preprocess/preprocess_json/NormalSvd_v2_260120/hasim_hablender_fisheye_v2_0203_h5.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 64.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hablendeder_fisheye_objs
+    sampling_strategy: "first:1"
+    mf_scene_sampling_strategy: "end:5"
+    fisheye_crop_pixel_normal: 5
+
+    type: hAlgorithm.datasets_fisheye.base_dataset_mv.BaseDatasetFisheyeMV
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: 3
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 2
+    
+    hdf5: true
+    rbg_name: rgb
+    depth_name: depth
+    normal_name: normal_svd
+    normal_hdf5: normal_svd_hdf5
+    camera_type: "FISHEYE_EQUIDISTANT"
+    # normal_name: none
+    mask_name: none
+    sem_name: none
+
+    mf_to_sf: false
+
+  # kosmo
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_fisheye_6
+    sampling_strategy: [5, 25, 35]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [6]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 2
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: lidar_depth
+    eval_mask_name: none
+    disparity_name: none
+    pre_crop_edge: [500, 0]
+    camera_type: "FISHEYE_EQUIDISTANT"
+    fisheye_edge_value: 300
+    fisheye_edge_pixel: 30
+    prompt_extrinsics_type: slam
+    prompt_extrinsics_name: extrinsics
+  
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260117_8_诺坎普/诺坎普_newdrc_暗光增强/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260105210001.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_fisheye_7
+    sampling_strategy: [5, 25, 35]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [7]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 2
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: lidar_depth
+    eval_mask_name: none
+    disparity_name: none
+    pre_crop_edge: [500, 0]
+    camera_type: "FISHEYE_EQUIDISTANT"
+    fisheye_edge_value: 300
+    fisheye_edge_pixel: 30
+    prompt_extrinsics_type: slam
+    prompt_extrinsics_name: extrinsics
+
+  # kosmo outdoor
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260110_8_新华路建筑/7815_新华路建筑/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260107210000.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_fisheye_6_新华路建筑
+    sampling_strategy: [5, 25, 35]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [6]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 2
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: lidar_depth
+    eval_mask_name: none
+    disparity_name: none
+    pre_crop_edge: [500, 0]
+    camera_type: "FISHEYE_EQUIDISTANT"
+    fisheye_edge_value: 300
+    fisheye_edge_pixel: 30
+    prompt_extrinsics_type: slam
+    prompt_extrinsics_name: extrinsics
+  
+  - data_path: [
+      /mnt/nasTeam/Kosmo/processed_data/kosmo/20260110_8_新华路建筑/7815_新华路建筑/raw_data/data_hgaussian_v1.0.1_normal_mvfr_v251105_sfm_colmap_v1.4.0_mask_mos_v1.1.2_depth_mvfr_v251105@20260107210000.json,
+    ]
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 1000.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/home/stang/workspace/TMA2
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kosmo_fisheye_7_新华路建筑
+    sampling_strategy: [5, 25, 35]
+    mf_scene_sampling_strategy: all
+    mf_view_ids: [7]
+    type: hAlgorithm.datasets_fisheye.lidar_depth_dataset.LidarDepthDatasetMV
+    mf_to_mv: true
+    clip_maxlen: 2
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.debug_trajectory.DebugTrajectory
+      view_num: 2
+    # drop_last: false
+    # with_depth_raw: false
+    rbg_name: rgb
+    depth_name: none
+    mask_name: none
+    sem_name: none
+    normal_name: none
+    lidar_name: lidar_depth
+    eval_mask_name: none
+    disparity_name: none
+    pre_crop_edge: [500, 0]
+    camera_type: "FISHEYE_EQUIDISTANT"
+    fisheye_edge_value: 300
+    fisheye_edge_pixel: 30
+    prompt_extrinsics_type: slam
+    prompt_extrinsics_name: extrinsics

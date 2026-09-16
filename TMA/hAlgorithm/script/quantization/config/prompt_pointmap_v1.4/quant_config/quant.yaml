@@ -1,0 +1,18 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Habitat-Sim-v2/train_mf_v2_0401_part1_filter_black_50.json
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 25.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: habitat
+    sampling_strategy: first:500
+    frame_ids: [0]
+    mf_scene_sampling_strategy: first:100
+    prob: 1.0
+
+    type: "hAlgorithm.datasets4d.base_dataset.BaseDataset4D"
+    mf_to_sf: true

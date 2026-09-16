@@ -1,0 +1,82 @@
+# Evaluation config: Any4D + HaSim-Character (2026-03-17)
+#
+# Standardized evaluation:
+#   - PointOdyssey:    10 scenes × 50 frames
+#   - Kubric4D:        10 scenes × 50 frames
+#   - HaSim-Character: all val scenes × 50 frames (sequential)
+#
+# Sampling:
+#   - mf_scene_sampling_strategy: end:10 → last 10 scenes for PO / K4D
+#   - SequentialClipSampler(view_num=50) → 50 consecutive frames per scene
+#   - sampling_strategy: [0] → single clip per scene
+
+datasets:
+  # PointOdyssey - 10 scenes × 50 frames
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/PointOdyssey/test_mf_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: pointodyssey
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0
+
+  # Kubric4D - 10 scenes × 50 frames
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/Kubric-4D/test_mf_with_tracking_2048.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: kubric4d
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: end:10
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.kubric4d_track_dataset.Kubric4DTrackDataset
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0
+
+  # HaSim-Character - all val scenes × 50 frames
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/Hasim_pinhole_4D_character/hasim_4d_mf_val_with_tracking.json
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 20.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/nasTeam2/AI/datasets/TMD
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: hasim_character
+    sampling_strategy: [0]
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    type: hAlgorithm.datasets_4d.hasim_track_dataset.HaSimTrackDataset
+    skip_static_threshold: 0.02
+    mf_to_mv: true
+    clip_maxlen: null
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.sequential_sampler.SequentialClipSampler
+      view_num: 50
+      start_idx: 0

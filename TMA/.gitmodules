@@ -1,0 +1,16 @@
+[submodule "opensource_algos/tools/gim"]
+	path = opensource_algos/tools/gim
+	url = ssh://git@code.hesaitech.com:10022/TM_Algorithm/open-projects/gim.git
+[submodule "opensource_algos/tools/Lotus"]
+	path = opensource_algos/tools/Lotus
+	url = ssh://git@code.hesaitech.com:10022/TM_Algorithm/open-projects/Lotus.git
+[submodule "opensource_algos/tools/Sa2VA"]
+	path = opensource_algos/tools/Sa2VA
+	url = ssh://git@code.hesaitech.com:10022/TM_Algorithm/open-projects/Sa2VA.git
+[submodule "opensource_algos/tools/PGSR"]
+	path = opensource_algos/tools/PGSR
+	url = ssh://git@code.hesaitech.com:10022/TM_Algorithm/open-projects/PGSR.git
+	branch = dev
+[submodule "opensource_algos/tools/OMNI-DC"]
+    path = opensource_algos/tools/OMNI-DC
+    url = ssh://git@code.hesaitech.com:10022/TM_Algorithm/open-projects/OMNI-DC.git

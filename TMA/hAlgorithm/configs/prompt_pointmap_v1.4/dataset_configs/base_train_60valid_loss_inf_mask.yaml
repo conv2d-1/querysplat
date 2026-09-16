@@ -1,0 +1,16 @@
+datasets:
+  - data_path: /mnt/netdata/Team/AI/datasets/TMD/FilterLoss/Hypersim_train_range_60_valid_filter_loss.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    only_pointmap: true
+    with_pointmap: true
+    depth_scale: 1.0
+    min_depth: 0.001
+    max_depth: 100.0
+    point_normalize_mode: "distance"
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/hypersim.py
+    with_inf_mask: true
+    inf_mask_depth_nan: true
+    prob: 1.0 # syn
+    

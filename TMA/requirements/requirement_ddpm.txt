@@ -1,0 +1,35 @@
+h5py
+ninja
+addict
+plyfile
+easydict
+matplotlib==3.8.2
+torch==2.0.1
+torchvision==0.15.2
+torchaudio==2.0.2
+tensorboard
+tensorboardX
+
+# stable_diffusion
+accelerate==0.33.0
+diffusers==0.30.0
+
+# Free3D
+carvekit-colab==4.1.1
+clean-fid==0.1.35
+einops==0.6.2rc0
+kornia==0.7.1
+lpips==0.1.4
+omegaconf==2.3.0
+pytorch_lightning==1.9.0
+rembg==2.0.54
+scenepic==1.1.0
+scikit-video==1.1.11
+taming-transformers==0.0.1
+transformers==4.40.0
+wandb==0.16.3
+ruamel-yaml
+pathlib==1.0.1
+
+# CLIP
+ftfy==6.2.3

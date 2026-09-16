@@ -1,0 +1,12 @@
+datasets:
+  - data_path: /mnt/personal/ts/data/Marigold/data_split/hypersim/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    pipeline: hAlgorithm/configs/dataset/diffuser/pipeline/hypersim.py
+    prob: 0.9
+    
+  - data_path: /mnt/personal/ts/data/Marigold/data_split/vkitti2/train.json
+    sampling_strategy: all
+    sparse_depth_ratio: 0.05
+    pipeline: hAlgorithm/configs/dataset/diffuser/pipeline/vkitti.py
+    prob: 0.1

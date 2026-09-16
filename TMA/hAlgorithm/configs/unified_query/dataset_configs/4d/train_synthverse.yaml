@@ -1,0 +1,34 @@
+# SynthVerse training (463 scenes, single moving camera per frame).
+#
+# JSON: train_mf_with_tracking.json (PointOdyssey-style mf_files)
+# Loader: PointOdysseyTrackDataset (c2w extrinsics, world trajs_3d, PNG depth)
+#
+# Notes:
+#   - depth is uint16 PNG with depth_scale=1000 (meters); use max_depth >= 70
+#   - no sem/flow/normal
+#   - mf_to_mv groups temporal frames (view_id=0) into clips
+
+datasets:
+  - data_path: /mnt/nasTeam2/AI/datasets/TMD/SynthVerse/converted/train_mf_with_tracking.json
+    data_root: /mnt/nasTeam2/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/pipeline_14x/base4d.py
+    name: synthverse
+    type: hAlgorithm.datasets_4d.pointodyssey_track_dataset.PointOdysseyTrackDataset
+
+    only_pointmap: true
+    with_pointmap: true
+    min_depth: 0.001
+    max_depth: 70.0
+    point_normalize_mode: "distance"
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+    prob: 1.0
+
+    mf_to_mv: true
+    clip_maxlen: 24
+    clip_step: null
+    clip_sampler:
+      type: hAlgorithm.datasets_mv.clip_sampler.random_sampler.RandomClipSampler
+      view_num: 4
+      seed: null

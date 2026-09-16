@@ -1,0 +1,39 @@
+datasets_train:
+  - data_path: /mnt/netdata/Team/AI/personal/zhangyu/test0612/output_mvs3.0/robot/robot_pose.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: robot
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: robot
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: trainval
+
+
+datasets_val:
+  - data_path: /mnt/netdata/Team/AI/personal/zhangyu/test0612/output_mvs3.0/robot/robot_pose.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: robot
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: robot
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
+
+datasets_vis:
+  - data_path: /mnt/netdata/Team/AI/personal/zhangyu/test0612/output_mvs3.0/robot/robot_pose.json
+    data_root: /mnt/netdata/Team/AI/datasets/TMD/
+    pipeline: hAlgorithm/configs/dataset/reconstruct/gs_dataset.py
+    name: robot
+
+    sampling_strategy: all
+    mf_scene_sampling_strategy: all
+
+    mf_scene: robot
+    meta_json: /mnt/netdata/Team/AI/datasets/TMD/Benchmark/Gaussian/metadata/metadata.json
+    meta_json_split: val
