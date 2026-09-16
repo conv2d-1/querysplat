@@ -28,7 +28,7 @@ PYTHON="${ENV_PREFIX}/bin/python"
 # Install packages that also appear as Torch dependencies from the fast default
 # mirror first. Otherwise PyTorch's wheel index serves them very slowly.
 "${PYTHON}" -m pip install \
-  numpy==1.23.5 \
+  numpy==1.26.4 \
   Pillow \
   filelock \
   "typing-extensions>=4.8.0" \
@@ -74,7 +74,7 @@ fi
   diffusers==0.31.0 \
   hydra-core \
   PyYAML==6.0.2 \
-  numpy==1.23.5 \
+  numpy==1.26.4 \
   easydict \
   einops \
   Pillow \
@@ -101,6 +101,10 @@ fi
   kornia \
   lpips \
   tabulate
+
+# imgaug==0.4.0 uses np.sctypes, removed in NumPy 2. Pin NumPy after the
+# remaining packages because modern scipy/opencv wheels may otherwise upgrade it.
+"${PYTHON}" -m pip install --force-reinstall "numpy==1.26.4"
 
 "${PYTHON}" - <<'PY'
 from torchvision.models import VGG16_Weights, vgg16

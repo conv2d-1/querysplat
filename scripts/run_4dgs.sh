@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMA_ROOT="${ROOT}/TMA"
 D4GS_ROOT="${ROOT}/4DGS"
 ENV_PREFIX="${ENV_PREFIX:-${ROOT}/.envs/tma4dgs}"
@@ -30,13 +30,13 @@ export TORCH_HOME="${TORCH_HOME:-${ROOT}/.cache/torch}"
 usage() {
   cat <<'EOF'
 Usage:
-  ./run_4dgs.sh check
-  ./run_4dgs.sh infer [video-or-image-directory]
-  ./run_4dgs.sh render [video-or-image-directory]
-  ./run_4dgs.sh test
-  ./run_4dgs.sh train-smoke
-  ./run_4dgs.sh train
-  ./run_4dgs.sh resume
+  ./scripts/run_4dgs.sh check
+  ./scripts/run_4dgs.sh infer [video-or-image-directory]
+  ./scripts/run_4dgs.sh render [video-or-image-directory]
+  ./scripts/run_4dgs.sh test
+  ./scripts/run_4dgs.sh train-smoke
+  ./scripts/run_4dgs.sh train
+  ./scripts/run_4dgs.sh resume
 
 Environment overrides:
   PYTHON, CONFIG, CHECKPOINT, TEST_CHECKPOINT, RESULTS_ROOT, CUDA_VISIBLE_DEVICES

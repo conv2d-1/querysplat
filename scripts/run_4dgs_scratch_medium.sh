@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMA_ROOT="${ROOT}/TMA"
 D4GS_ROOT="${ROOT}/4DGS"
 ENV_PREFIX="${ENV_PREFIX:-${ROOT}/.envs/tma4dgs}"
@@ -35,9 +35,9 @@ export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:T
 usage() {
   cat <<'EOF'
 Usage:
-  ./run_4dgs_scratch_medium.sh check
-  ./run_4dgs_scratch_medium.sh smoke
-  ./run_4dgs_scratch_medium.sh train
+  ./scripts/run_4dgs_scratch_medium.sh check
+  ./scripts/run_4dgs_scratch_medium.sh smoke
+  ./scripts/run_4dgs_scratch_medium.sh train
 
 The default recipe trains the complete 1.65B-parameter model from native
 PyTorch/module initialization. It does not load a model/trainer checkpoint,

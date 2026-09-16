@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMA_ROOT="${ROOT}/TMA"
 D4GS_ROOT="${ROOT}/4DGS"
 ENV_PREFIX="${ENV_PREFIX:-${ROOT}/.envs/tma4dgs}"
@@ -47,10 +47,10 @@ export DDP_GRADIENT_AS_BUCKET_VIEW="${DDP_GRADIENT_AS_BUCKET_VIEW:-1}"
 usage() {
   cat <<'EOF'
 用法:
-  ./run_4dgs_scratch_full.sh check [--参数=值]
-  ./run_4dgs_scratch_full.sh train [--参数=值]
-  ./run_4dgs_scratch_full.sh resume --resume-from=PATH [--参数=值]
-  ./run_4dgs_scratch_full.sh auto --run-dir=PATH [--参数=值]
+  ./scripts/run_4dgs_scratch_full.sh check [--参数=值]
+  ./scripts/run_4dgs_scratch_full.sh train [--参数=值]
+  ./scripts/run_4dgs_scratch_full.sh resume --resume-from=PATH [--参数=值]
+  ./scripts/run_4dgs_scratch_full.sh auto --run-dir=PATH [--参数=值]
 
 参数:
   --run-dir=PATH --resume-from=PATH --max-iter=N

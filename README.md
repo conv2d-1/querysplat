@@ -16,8 +16,11 @@ Myworkspace/
 │       ├── local_val.yaml
 │       ├── smoke_train.yaml
 │       └── smoke_val.yaml
-├── setup_4dgs_env.sh
-└── run_4dgs.sh
+├── scripts/                  # 运行、训练与评测入口
+│   ├── run_4dgs.sh
+│   ├── run_4dgs_full.sh
+│   └── run_4dgs_overfit_10.sh
+└── setup_4dgs_env.sh
 ```
 
 ## 环境
@@ -27,7 +30,7 @@ Myworkspace/
 ```bash
 cd /mnt/cfsdata/Team/AI/personal/zhangweiqi/workspace/Myworkspace
 ./setup_4dgs_env.sh
-./run_4dgs.sh check
+./scripts/run_4dgs.sh check
 ```
 
 默认环境路径：
@@ -40,34 +43,34 @@ Myworkspace/.envs/tma4dgs
 
 ```bash
 # 无 GT 视频/图像序列推理，默认使用 DAVIS bear，4 帧、280px
-./run_4dgs.sh infer
+./scripts/run_4dgs.sh infer
 
 # 稠密 Gaussian 渲染和 Web viewer 导出
-./run_4dgs.sh render
+./scripts/run_4dgs.sh render
 
 # 单场景验证、指标及 4DGS 可视化
-./run_4dgs.sh test
+./scripts/run_4dgs.sh test
 
 # 两步微调，验证数据、前向、反向、优化器和 checkpoint
-./run_4dgs.sh train-smoke
+./scripts/run_4dgs.sh train-smoke
 
 # 完整微调或从 iter_50000 连续恢复
-./run_4dgs.sh train
-MAX_ITER=50010 ./run_4dgs.sh resume
+./scripts/run_4dgs.sh train
+MAX_ITER=50010 ./scripts/run_4dgs.sh resume
 ```
 
 自定义输入：
 
 ```bash
-./run_4dgs.sh infer /path/to/video.mp4
-./run_4dgs.sh render /path/to/image_sequence
+./scripts/run_4dgs.sh infer /path/to/video.mp4
+./scripts/run_4dgs.sh render /path/to/image_sequence
 ```
 
 可通过环境变量覆盖：
 
 ```bash
-MAX_FRAMES=8 PROCESS_RES=504 QUERY_STRIDE=2 ./run_4dgs.sh infer /path/to/input
-TRAIN_STEPS=10 CUDA_VISIBLE_DEVICES=0 ./run_4dgs.sh train-smoke
+MAX_FRAMES=8 PROCESS_RES=504 QUERY_STRIDE=2 ./scripts/run_4dgs.sh infer /path/to/input
+TRAIN_STEPS=10 CUDA_VISIBLE_DEVICES=0 ./scripts/run_4dgs.sh train-smoke
 ```
 
 ## 完整训练

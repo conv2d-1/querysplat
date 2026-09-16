@@ -52,5 +52,6 @@ events.*
 .vscode/
 .idea/
 
-# TMA is an independent nested Git repository; keep it out of this superproject.
-TMA/
+
+# Local experiment workspace
+work/

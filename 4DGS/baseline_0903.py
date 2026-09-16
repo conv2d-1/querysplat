@@ -361,6 +361,8 @@ model = dict(
             random_src_frame=True,
             predict_attribute_delta=False,
             use_rgb_color_anchor=True,
+            use_rgb_feature_residual=True,
+            rgb_feature_dim=128,
             use_sharp_zero_init=True,
             sharp_zero_activation='softsign',
             param_factors={'xyz': 1e-2},
@@ -676,6 +678,23 @@ trainer = dict(
             ),
             dict(
                 type='hAlgorithm.modules.metrics.combined_eval_metrics.CombinedEvalMetrics',
+                task='Render',
+                eval_groups=[
+                    dict(
+                        type='hAlgorithm.modules.metrics.dynamic_gaussian_eval_metrics.DynamicGaussianEvalMetrics',
+                        target_name='image',
+                        render_attr='dgs_render_rgb',
+                        metric_prefix='',
+                        metrics=[
+                            'rgb_psnr',
+                            'rgb_ssim',
+                            'rgb_lpips',
+                        ],
+                    ),
+                ],
+            ),
+            dict(
+                type='hAlgorithm.modules.metrics.combined_eval_metrics.CombinedEvalMetrics',
                 task='Dyn_pts',
                 eval_groups=[
                     dict(
@@ -735,8 +754,23 @@ trainer = dict(
                 ],
             ),
         ],
+        composite_metrics=[
+            dict(
+                name='CameraRender|score',
+                components=[
+                    # Camera score: 50% total (AUC metrics are already in [0, 1]).
+                    dict(metric='Camera|auc_1', weight=0.30, lower=0.0, upper=1.0),
+                    dict(metric='Camera|auc_30', weight=0.20, lower=0.0, upper=1.0),
+                    # Render score: 50% total. PSNR is mapped from a practical
+                    # validation range; SSIM is naturally bounded; LPIPS is inverted.
+                    dict(metric='Render|rgb_psnr', weight=0.225, lower=10.0, upper=40.0),
+                    dict(metric='Render|rgb_ssim', weight=0.175, lower=0.0, upper=1.0),
+                    dict(metric='Render|rgb_lpips', weight=0.10, lower=0.0, upper=1.0, invert=True),
+                ],
+            ),
+        ],
     ),
-    main_eval_metric='Camera|auc_1',
+    main_eval_metric='CameraRender|score',
     main_eval_metric_goal='maximize',
     in_evaluation=False,
     in_visualize=False,

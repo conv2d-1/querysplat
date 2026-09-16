@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TMA_ROOT="${ROOT}/TMA"
 D4GS_ROOT="${ROOT}/4DGS"
 ENV_PREFIX="${ENV_PREFIX:-${ROOT}/.envs/tma4dgs}"
@@ -52,14 +52,14 @@ export OMP_NUM_THREADS="${OMP_NUM_THREADS:-${cpu_count}}"
 usage() {
   cat <<'EOF'
 用法:
-  ./run_4dgs_full.sh check
-  ./run_4dgs_full.sh train
-  ./run_4dgs_full.sh resume <run-dir|ckpt.pth>
-  ./run_4dgs_full.sh test [run-dir|ckpt.pth]
-  ./run_4dgs_full.sh render [run-dir|ckpt.pth]
-  ./run_4dgs_full.sh evaluate [run-dir|ckpt.pth]
-  ./run_4dgs_full.sh all
-  ./run_4dgs_full.sh media-render <video-or-image-directory> [...]
+  ./scripts/run_4dgs_full.sh check
+  ./scripts/run_4dgs_full.sh train
+  ./scripts/run_4dgs_full.sh resume <run-dir|ckpt.pth>
+  ./scripts/run_4dgs_full.sh test [run-dir|ckpt.pth]
+  ./scripts/run_4dgs_full.sh render [run-dir|ckpt.pth]
+  ./scripts/run_4dgs_full.sh evaluate [run-dir|ckpt.pth]
+  ./scripts/run_4dgs_full.sh all
+  ./scripts/run_4dgs_full.sh media-render <video-or-image-directory> [...]
 
 模式:
   train        原始全量训练配方，默认 50000 step；训练中沿用轻量协议验证。
