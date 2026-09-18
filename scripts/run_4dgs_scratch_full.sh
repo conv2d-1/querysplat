@@ -246,8 +246,10 @@ if torch.__version__.split("+")[0] != "2.4.1":
     errors.append(f"需要 torch 2.4.1，实际 {torch.__version__}")
 if torchvision.__version__.split("+")[0] != "0.19.1":
     errors.append(f"需要 torchvision 0.19.1，实际 {torchvision.__version__}")
-if numpy.__version__ != "1.23.5":
-    errors.append(f"需要 numpy 1.23.5，实际 {numpy.__version__}")
+if tuple(map(int, numpy.__version__.split(".")[:2])) >= (2, 0):
+    errors.append(
+        f"需要 numpy<2（推荐 1.26.4，以兼容 imgaug==0.4.0），实际 {numpy.__version__}"
+    )
 if gsplat.__version__ != "1.5.3+pt24cu124":
     errors.append(f"需要 gsplat 1.5.3+pt24cu124，实际 {gsplat.__version__}")
 if torch.version.cuda != "12.4":

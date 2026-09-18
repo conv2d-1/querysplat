@@ -1037,11 +1037,11 @@ def encode_pair_features(sdk, batch, amp_ctx):
     with amp_ctx:
         patch_features, pos, patch_start_idx, _ = sdk.aggregator(
             rgb=batch["image"],
-            scale=batch["scale"],
+            scale=batch.get("scale"),
             prompt_depth=None,
             intrinsics=batch.get("intrinsics"),
             ray_directions=None,
-            w2c=batch["extrinsics_reff"],
+            w2c=batch.get("extrinsics_reff"),
             c2w=None,
             ray_world=None,
             rgb_mask=None,

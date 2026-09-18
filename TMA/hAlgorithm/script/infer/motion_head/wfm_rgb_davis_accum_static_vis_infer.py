@@ -4,9 +4,9 @@ DAVIS accumulated per-frame static + frame-0 dynamic warp3d visualization.
 
 Per sequence:
   1. Sample RGB frames (default 50, debug_trajectory).
-  2. For each frame t: pair (t, t) dense grid → static point cloud outside frame-t VOS mask,
+  2. For each frame t: pair (t, t) dense RGB grid → static point cloud,
      colored by frame-t RGB at the same query UVs.
-  3. Pairs (0, t): frame-0 DAVIS mask query UVs → dynamic tracks (same as dynamic vis).
+  3. Pairs (0, t): dense RGB-grid query UVs → dynamic tracks.
   4. Rerun: at time t, static clouds from frames 0..t are accumulated; dynamic pred + trajectories.
   5. Predicted camera frustums per frame (rainbow: frame 0 red → last frame violet), accumulated over time.
 
@@ -262,11 +262,14 @@ def build_static_layer_outside_mask(
     raw_static: np.ndarray,
     uv_static: np.ndarray,
     frame_rgb: np.ndarray,
-    frame_mask: np.ndarray,
+    frame_mask: np.ndarray | None,
     mask_threshold: int,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Keep (t,t) warp3d outside frame-t VOS mask; sample RGB on frame-t image."""
     uv = np.asarray(uv_static, dtype=np.float64)
+    if frame_mask is None:
+        pts = np.asarray(raw_static, dtype=np.float64)
+        return pts, _davis.sample_rgb_at_uv(frame_rgb, uv)
     h, w = frame_mask.shape[:2]
     px = np.clip(np.round(uv[:, 0] * max(w - 1, 1)).astype(int), 0, w - 1)
     py = np.clip(np.round(uv[:, 1] * max(h - 1, 1)).astype(int), 0, h - 1)
@@ -453,6 +456,11 @@ def parse_args():
     p.add_argument("--load_from", type=str, required=True)
     p.add_argument("--davis_root", type=str, default=_davis.DEFAULT_DAVIS_ROOT)
     p.add_argument("--resolution", type=str, default="480p", choices=["480p", "1080p"])
+    p.add_argument(
+        "--use_davis_masks",
+        action="store_true",
+        help="Opt in to legacy DAVIS annotation-mask queries and filtering.",
+    )
     p.add_argument("--sequence", type=str, default=None)
     p.add_argument("--sequences", nargs="+", default=None)
     p.add_argument("--output_dir", type=str, default="./results/wfm_rgb_davis_accum_static_vis")
@@ -522,7 +530,12 @@ def run_sequence(
     process_res: int,
     patch_size: int,
 ) -> None:
-    rgb_dir, mask_dir = _davis.davis_paths(args.davis_root, args.resolution, seq_name)
+    rgb_dir, mask_dir = _davis.davis_paths(
+        args.davis_root,
+        args.resolution,
+        seq_name,
+        require_masks=args.use_davis_masks,
+    )
     rgb_paths = _davis.list_sorted_frames(rgb_dir)
     rgb_paths = _seq.sample_frame_paths(rgb_paths, args.max_frames, args.frame_sampling)
     n_frames = len(rgb_paths)
@@ -538,25 +551,36 @@ def run_sequence(
         frame_rgbs_model.append(frame_rgb_from_tensor(ten))
         rgb_orig = _davis.load_frame_rgb_orig(p)
         frame_rgbs_orig.append(rgb_orig)
-        mask_path = _davis.mask_path_for_frame(mask_dir, p)
-        frame_masks_model.append(
-            _davis.resize_mask_nearest(_davis.load_mask_gray(mask_path), nh, nw),
-        )
+        if args.use_davis_masks:
+            mask_path = _davis.mask_path_for_frame(mask_dir, p)
+            frame_masks_model.append(
+                _davis.resize_mask_nearest(_davis.load_mask_gray(mask_path), nh, nw),
+            )
+        else:
+            frame_masks_model.append(None)
 
     h, w = frame_tensors[0].shape[1:]
     ref_rgb_path = rgb_paths[0]
-    ref_mask_path = _davis.mask_path_for_frame(mask_dir, ref_rgb_path)
-    uv_dynamic, ref_fg_orig, (orig_h, orig_w) = _davis.mask_to_query_uv_from_paths(
-        ref_rgb_path,
-        ref_mask_path,
-        downsample=args.dynamic_downsample,
-        max_queries=args.max_dynamic_queries,
-        mask_threshold=args.mask_threshold,
-    )
-    ref_mask_model = frame_masks_model[0]
     uv_static, _, _ = _pair.sample_dense_grid(h, w, args.static_downsample)
+    ref_mask_path = None
+    ref_mask_model = None
+    ref_fg_orig = None
+    if args.use_davis_masks:
+        ref_mask_path = _davis.mask_path_for_frame(mask_dir, ref_rgb_path)
+        uv_dynamic, ref_fg_orig, _ = _davis.mask_to_query_uv_from_paths(
+            ref_rgb_path,
+            ref_mask_path,
+            downsample=args.dynamic_downsample,
+            max_queries=args.max_dynamic_queries,
+            mask_threshold=args.mask_threshold,
+        )
+        ref_mask_model = frame_masks_model[0]
+    else:
+        uv_dynamic = _davis.dense_query_uv(
+            h, w, args.dynamic_downsample, args.max_dynamic_queries
+        )
 
-    if args.save_mask_debug:
+    if args.use_davis_masks and args.save_mask_debug:
         _davis.save_mask_debug_overlays(
             os.path.join(args.output_dir, seq_name),
             seq_name,
@@ -567,18 +591,18 @@ def run_sequence(
         )
 
     logging.info(
-        "Queries: static_grid=%d (downsample=%d), dynamic=%d (ref VOS fg=%d)",
+        "Queries: static_grid=%d (downsample=%d), dynamic=%d (source=%s)",
         len(uv_static),
         args.static_downsample,
         len(uv_dynamic),
-        int(ref_fg_orig.sum()),
+        "DAVIS mask" if args.use_davis_masks else "RGB grid",
     )
 
     frame_data_list = [
         dict(image=ten, image_rgb=rgb, frame_id=Path(p).stem, rgb_path=p)
         for ten, rgb, p in zip(frame_tensors, frame_rgbs_model, rgb_paths)
     ]
-    batch = _pair.build_window_batch(frame_data_list, device, 1.0)
+    batch = _davis.build_rgb_only_window_batch(frame_tensors, seq_name, device)
 
     amp_dtype = torch.float16 if args.amp_dtype == "float16" else torch.bfloat16
     amp_ctx = (
@@ -693,12 +717,20 @@ def run_sequence(
         sequence=seq_name,
         num_frames=n_frames,
         rgb_dir=rgb_dir,
-        mask_dir=mask_dir,
+        mask_dir=mask_dir if args.use_davis_masks else None,
         ref_rgb=ref_rgb_path,
         ref_mask=ref_mask_path,
-        static_mode="per_frame_nn_outside_frame_t_mask",
-        dynamic_mode="ref0_mask_pair_0t",
-        orig_fg_pixels=int(ref_fg_orig.sum()),
+        static_mode=(
+            "per_frame_nn_outside_frame_t_mask"
+            if args.use_davis_masks
+            else "per_frame_rgb_grid"
+        ),
+        dynamic_mode=(
+            "ref0_mask_pair_0t"
+            if args.use_davis_masks
+            else "ref0_rgb_grid_pair_0t"
+        ),
+        orig_fg_pixels=int(ref_fg_orig.sum()) if ref_fg_orig is not None else None,
         static_grid_queries=int(len(uv_static)),
         dynamic_queries=int(uv_dynamic.shape[0]),
         static_downsample=args.static_downsample,
@@ -756,7 +788,12 @@ def export_rrd_from_saved(
     tracks = dyn["tracks"]
     uv_dynamic = dyn["uv"]
 
-    rgb_dir, mask_dir = _davis.davis_paths(args.davis_root, args.resolution, seq_name)
+    rgb_dir, mask_dir = _davis.davis_paths(
+        args.davis_root,
+        args.resolution,
+        seq_name,
+        require_masks=args.use_davis_masks,
+    )
     rgb_paths = _davis.list_sorted_frames(rgb_dir)
     rgb_paths = _seq.sample_frame_paths(rgb_paths, args.max_frames, args.frame_sampling)
     id_to_path = {Path(p).stem: p for p in rgb_paths}
@@ -770,10 +807,13 @@ def export_rrd_from_saved(
         frame_rgbs_model.append(frame_rgb_from_tensor(ten))
         rgb_orig = _davis.load_frame_rgb_orig(p)
         frame_rgbs_orig.append(rgb_orig)
-        mask_path = _davis.mask_path_for_frame(mask_dir, p)
-        frame_masks_model.append(
-            _davis.resize_mask_nearest(_davis.load_mask_gray(mask_path), nh, nw),
-        )
+        if args.use_davis_masks:
+            mask_path = _davis.mask_path_for_frame(mask_dir, p)
+            frame_masks_model.append(
+                _davis.resize_mask_nearest(_davis.load_mask_gray(mask_path), nh, nw),
+            )
+        else:
+            frame_masks_model.append(None)
 
     ref_mask_model = frame_masks_model[0]
     static_per_frame: list[tuple[np.ndarray, np.ndarray]] = []

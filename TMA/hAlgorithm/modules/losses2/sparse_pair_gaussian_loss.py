@@ -65,6 +65,7 @@ class SparsePairDynamicGaussianRenderLoss(nn.Module):
         grad_loss_epsilon: float = 0.01,
         lpips_weight: float = 0.0,
         render_random_background: bool = False,
+        bootstrap_infer_sh_from_rgb: bool = True,
     ):
         super().__init__()
         self.l1_weight = l1_weight
@@ -88,6 +89,7 @@ class SparsePairDynamicGaussianRenderLoss(nn.Module):
         self.grad_loss_weight = grad_loss_weight
         self.lpips_weight = lpips_weight
         self.render_random_background = render_random_background
+        self.bootstrap_infer_sh_from_rgb = bootstrap_infer_sh_from_rgb
         self._lpips = None
         if lpips_weight > 0:
             from lpips import LPIPS
@@ -946,9 +948,10 @@ class SparsePairDynamicGaussianRenderLoss(nn.Module):
             displacements,
         )
 
-        gs_sh = self._bootstrap_infer_sh(
-            gs_sh, results.get("query"), infer_image, ref_frame, query_idx=query_idx,
-        )
+        if self.bootstrap_infer_sh_from_rgb:
+            gs_sh = self._bootstrap_infer_sh(
+                gs_sh, results.get("query"), infer_image, ref_frame, query_idx=query_idx,
+            )
 
         rgb_list = []
         for t in range(N):

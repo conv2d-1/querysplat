@@ -94,6 +94,7 @@ class WFMQueryPipeline(MVFRQueryPipeline):
         gs_xyz_offset_loss=None,
         dgs_scale_dropout_prob=0.0,
         dgs_render_normalized_only=False,
+        test_rgb_only=True,
         **kwargs,
     ):
         super(WFMQueryPipeline, self).__init__(**kwargs)
@@ -101,6 +102,7 @@ class WFMQueryPipeline(MVFRQueryPipeline):
         self.static_dataset_names = static_dataset_names
         self.dynamic_dataset_names = dynamic_dataset_names
         self.sparse_dataset_names = sparse_dataset_names
+        self.test_rgb_only = bool(test_rgb_only)
 
         self.pair_mode = pair_mode
         self.global_pair_mode = global_pair_mode
@@ -2101,7 +2103,18 @@ class WFMQueryPipeline(MVFRQueryPipeline):
 
         _extra_model_kwargs = self._infer_extra_model_kwargs()
 
-        if prompt_extrinsics is not None:
+        # Test-time predictions use RGB only by default. Ground-truth geometry
+        # remains available for metrics, but cannot condition the model/render.
+        model_query_image = query_image
+        model_scale = None if self.test_rgb_only else scale
+        model_prompt_depth = None if self.test_rgb_only else prompt_depth
+        model_intrinsics = None if self.test_rgb_only else intrinsics
+        model_ray_directions = None if self.test_rgb_only else ray_directions
+        model_ray_world = None if self.test_rgb_only else ray_world
+
+        if self.test_rgb_only:
+            w2c = None
+        elif prompt_extrinsics is not None:
             w2c = prompt_extrinsics
         elif extrinsics_noise is not None and extrinsics is not None:
             w2c = torch.matmul(extrinsics_noise, extrinsics)
@@ -2112,13 +2125,13 @@ class WFMQueryPipeline(MVFRQueryPipeline):
             with torch.autocast("cuda", enabled=bool(batch["use_amp"]), dtype=batch["amp_dtype"]):
                 results = self.model(
                     image,
-                    query_rgb=query_image,
-                    scale=scale,
-                    prompt_depth=prompt_depth,
-                    intrinsics=intrinsics,
-                    ray_directions=ray_directions,
+                    query_rgb=model_query_image,
+                    scale=model_scale,
+                    prompt_depth=model_prompt_depth,
+                    intrinsics=model_intrinsics,
+                    ray_directions=model_ray_directions,
                     w2c=w2c,
-                    ray_world=ray_world,
+                    ray_world=model_ray_world,
                     meta_data=meta_data,
                     pair_idx=infer_pair_idx,
                     **_extra_model_kwargs,
@@ -2126,13 +2139,13 @@ class WFMQueryPipeline(MVFRQueryPipeline):
         else:
             results = self.model(
                 image,
-                query_rgb=query_image,
-                scale=scale,
-                prompt_depth=prompt_depth,
-                intrinsics=intrinsics,
-                ray_directions=ray_directions,
+                query_rgb=model_query_image,
+                scale=model_scale,
+                prompt_depth=model_prompt_depth,
+                intrinsics=model_intrinsics,
+                ray_directions=model_ray_directions,
                 w2c=w2c,
-                ray_world=ray_world,
+                ray_world=model_ray_world,
                 meta_data=meta_data,
                 pair_idx=infer_pair_idx,
                 **_extra_model_kwargs,
@@ -2203,8 +2216,10 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                     image_size_hw=image.shape[-2:],
                     build_intrinsics=True,
                 )
-                if scale is not None:
-                    pred_extrinsics[..., :3, 3] = self.denormalize(pred_extrinsics[..., :3, 3], scale=scale[..., 0, 0])
+                if model_scale is not None:
+                    pred_extrinsics[..., :3, 3] = self.denormalize(
+                        pred_extrinsics[..., :3, 3], scale=model_scale[..., 0, 0]
+                    )
 
                 # 以第 0 视角为参考系, 将所有外参转为相对位姿
                 if self.save_output_cfg["output_normalize_cameras"]:
@@ -2274,8 +2289,8 @@ class WFMQueryPipeline(MVFRQueryPipeline):
             pred_intrinsics[..., 0, :] *= x_scale
             pred_intrinsics[..., 1, :] *= y_scale
 
-        render_intrinsics = intrinsics
-        render_w2c = w2c_metric_for_dgs
+        render_intrinsics = None if self.test_rgb_only else intrinsics
+        render_w2c = None if self.test_rgb_only else w2c_metric_for_dgs
         if render_intrinsics is None and pred_intrinsics is not None:
             render_intrinsics = pred_intrinsics.to(device=self.device)
         if render_w2c is None and pred_extrinsics is not None:
@@ -2284,7 +2299,7 @@ class WFMQueryPipeline(MVFRQueryPipeline):
             logging.info("Gaussian render: using predicted camera (no GT in batch).")
 
         if self.dgs_render_normalized_only:
-            dgs_render_w2c = w2c_normalized_for_dgs
+            dgs_render_w2c = None if self.test_rgb_only else w2c_normalized_for_dgs
             if dgs_render_w2c is None and pred_extrinsics is not None:
                 dgs_render_w2c = pred_extrinsics.to(device=self.device)
         else:
@@ -2311,11 +2326,14 @@ class WFMQueryPipeline(MVFRQueryPipeline):
         dgs_width, dgs_height = resolve_sparse_dgs_render_shape(
             meta_data, results, width, height,
         )
-        dgs_base_intrinsics = (
-            intrinsics_at_input
-            if intrinsics_at_input is not None
-            else pred_intrinsics_at_input
-        )
+        if self.test_rgb_only:
+            dgs_base_intrinsics = pred_intrinsics_at_input
+        else:
+            dgs_base_intrinsics = (
+                intrinsics_at_input
+                if intrinsics_at_input is not None
+                else pred_intrinsics_at_input
+            )
         if dgs_base_intrinsics is not None:
             dgs_render_intrinsics = dgs_base_intrinsics
             if dgs_width != input_w or dgs_height != input_h:
@@ -2332,7 +2350,7 @@ class WFMQueryPipeline(MVFRQueryPipeline):
             results=results,
             intrinsics=dgs_render_intrinsics,
             extrinsics=dgs_render_w2c,
-            scale=scale,
+            scale=model_scale,
             height=dgs_height,
             width=dgs_width,
             image=image,
@@ -2450,15 +2468,15 @@ class WFMQueryPipeline(MVFRQueryPipeline):
             else:
                 motion_mask = None
 
-            if pair_src_scale is not None:
+            if pair_src_scale is not None and not self.test_rgb_only:
                 if warp3d is not None:
                     warp3d[:, :len(pair_idx)] = warp3d[:, :len(pair_idx)] * pair_src_scale
                 if warp3d_delta is not None:
                     warp3d_delta[:, :len(pair_idx)] = warp3d_delta[:, :len(pair_idx)] * pair_src_scale
             
-            if scale is not None and global_pair_idx is not None:
+            if model_scale is not None and global_pair_idx is not None:
                 global_src_idxs = [pair[0] for pair in global_pair_idx]
-                global_pair_scale = scale[:, global_src_idxs].squeeze(-1)  # (B, P_global, 1, 1)
+                global_pair_scale = model_scale[:, global_src_idxs].squeeze(-1)
 
                 if warp3d is not None:
                     warp3d[:, len(pair_idx):] = warp3d[:, len(pair_idx):] * global_pair_scale
@@ -2519,7 +2537,12 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                         pred_local_depth = pred_local_conf = None
 
                 if pred_local_depth is not None:
-                    if self.scale_align and target_local_depth is not None and target_depth_mask is not None:
+                    if (
+                        not self.test_rgb_only
+                        and self.scale_align
+                        and target_local_depth is not None
+                        and target_depth_mask is not None
+                    ):
                         if pred_local_depth.shape[-2:] != target_local_depth.shape[-2:]:
                             pred_local_depth_align = F.interpolate(pred_local_depth, target_local_depth.shape[-2:], mode="bilinear", align_corners=self.align_corners, antialias=False)
                             # pred_local_conf = F.interpolate(pred_local_conf, target_local_depth.shape[-2:], mode="bilinear", align_corners=self.align_corners, antialias=False)
@@ -2550,7 +2573,7 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                         scale_factor = least_squares_scale_scalar(target_local_depth[:, index, -1][target_depth_mask[:, index, 0]], pred_local_depth_align[:, -1][target_depth_mask[:, index, 0]])
                         if pred_local_depth is not None:
                             pred_local_depth *= scale_factor
-                    elif scale is not None:
+                    elif model_scale is not None:
                         intrinsics_for_depth = pred_intrinsics if pred_intrinsics is not None else intrinsics
                         if intrinsics_for_depth is not None:
                             pred_local_depth = self.depth_to_points_from_meta(
@@ -2561,9 +2584,20 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                                 cache=False,
                                 frame_index=index,
                             )
-                            pred_local_depth = self.denormalize(pred_local_depth, scale=scale[:, index])
+                            pred_local_depth = self.denormalize(
+                                pred_local_depth, scale=model_scale.cpu()[:, index]
+                            )
                         else:
                             pred_local_depth = None
+                    elif pred_intrinsics is not None:
+                        pred_local_depth = self.depth_to_points_from_meta(
+                            pred_local_depth,
+                            K=pred_intrinsics[:, index],
+                            meta_data=meta_data,
+                            device=pred_local_depth.device,
+                            cache=False,
+                            frame_index=index,
+                        )
 
                 if query_global_points is not None:
                     flat_global = query_global_points[0, index]
@@ -2574,7 +2608,12 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                         pred_global_points = pred_global_conf = None
 
                 if pred_global_points is not None:
-                    if self.scale_align and target_global_points is not None and target_depth_mask is not None:
+                    if (
+                        not self.test_rgb_only
+                        and self.scale_align
+                        and target_global_points is not None
+                        and target_depth_mask is not None
+                    ):
                         if pred_global_points.shape[-2:] != target_global_points.shape[-2:]:
                             pred_global_depth_align = F.interpolate(pred_global_points[:, -1].unsqueeze(1), target_global_points.shape[-2:], mode="bilinear", align_corners=self.align_corners, antialias=False)
                             # pred_global_conf = F.interpolate(pred_global_conf, target_global_points.shape[-2:], mode="bilinear", align_corners=self.align_corners, antialias=False)
@@ -2583,8 +2622,10 @@ class WFMQueryPipeline(MVFRQueryPipeline):
 
                         scale_factor = least_squares_scale_scalar(target_global_points[:, index, -1][target_depth_mask[:, index, 0]], pred_global_depth_align[:, -1][target_depth_mask[:, index, 0]])
                         pred_global_points *= scale_factor
-                    elif scale is not None:
-                        pred_global_points = self.denormalize(pred_global_points, scale=scale[:, index])
+                    elif model_scale is not None:
+                        pred_global_points = self.denormalize(
+                            pred_global_points, scale=model_scale.cpu()[:, index]
+                        )
 
                 single = self.postprocess(
                     pred_local_points=pred_local_depth,
@@ -2595,8 +2636,10 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                     pred_intrinsics=get_single_view_data(pred_intrinsics, index),
                     image=get_single_view_data(image, index),
                     image_show=get_single_view_data(image_show, index),
-                    scale=get_single_view_data(scale, index),
-                    prompt_depth=get_single_view_data(prompt_depth, index),
+                    scale=get_single_view_data(
+                        model_scale.cpu() if model_scale is not None else None, index
+                    ),
+                    prompt_depth=get_single_view_data(model_prompt_depth, index),
                     target_local_depth=get_single_view_data(target_local_depth, index),
                     target_global_points=get_single_view_data(target_global_points, index),
                     target_depth_mask=get_single_view_data(target_depth_mask, index),
@@ -2754,7 +2797,12 @@ class WFMQueryPipeline(MVFRQueryPipeline):
                                     warp3d_out[static_mask] = track_3d_data["src_trajs_3d_gt"][:, pair_i][static_mask]
 
                             warp3d_uv = None
-                            if extrinsics is not None and intrinsics is not None and warp3d_out is not None:
+                            if (
+                                not self.test_rgb_only
+                                and extrinsics is not None
+                                and intrinsics is not None
+                                and warp3d_out is not None
+                            ):
                                 tgt_w2c = extrinsics[:, cur_pair[1]]  # (B, 4, 4)
                                 tgt_K = intrinsics[:, cur_pair[1]]  # (B, 3, 3)
                                 ones = torch.ones(*warp3d_out.shape[:2], 1, dtype=warp3d_out.dtype)

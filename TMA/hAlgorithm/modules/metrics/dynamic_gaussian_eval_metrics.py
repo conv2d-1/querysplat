@@ -28,12 +28,14 @@ class DynamicGaussianEvalMetrics:
         render_attr: str = "dgs_render_rgb",
         target_normalize: bool = True,
         metric_prefix: str = "dgs_",
+        reference_frame_idx: int = 0,
     ) -> None:
         self.base_metrics = list(metrics)
         self.target_name = target_name
         self.render_attr = render_attr
         self.target_normalize = target_normalize
         self.metric_prefix = metric_prefix
+        self.reference_frame_idx = reference_frame_idx
 
         unsupported_metrics = [
             metric for metric in self.base_metrics
@@ -46,6 +48,10 @@ class DynamicGaussianEvalMetrics:
             )
 
         self.metrics = [self._prefix_metric_name(metric) for metric in self.base_metrics]
+        self.reference_metrics = [
+            self._prefix_metric_name(f"ref_{metric}") for metric in self.base_metrics
+        ]
+        self.metrics.extend(self.reference_metrics)
 
         self.lpips = None
         self.lpips_device = None
@@ -124,7 +130,20 @@ class DynamicGaussianEvalMetrics:
         if valid_result == 0:
             return dict()
 
-        return {key: value / valid_result for key, value in results_dict.items()}
+        results_dict = {key: value / valid_result for key, value in results_dict.items()}
+
+        # Report the reference frame independently. These metrics are exposed
+        # for diagnostics only; the best-checkpoint composite does not include
+        # any ref_* component.
+        ref_idx = self.reference_frame_idx
+        if 0 <= ref_idx < len(outputs) and outputs[ref_idx] is not None:
+            reference = self.eval_single_data(inputs, outputs[ref_idx], eval_idx=ref_idx)
+            for base_metric, metric_name in zip(self.base_metrics, self.reference_metrics):
+                source_name = self._prefix_metric_name(base_metric)
+                if source_name in reference:
+                    results_dict[metric_name] = reference[source_name]
+
+        return results_dict
 
     def __call__(self, inputs, outputs):
         if isinstance(outputs, list):

@@ -37,12 +37,13 @@ class SparsePairDynamicGaussianHead(nn.Module):
     ``single_feats`` from ``PairCrossAttnAggregator`` and a motion descriptor
     derived from pair displacements.
 
-    When ``use_rgb_color_anchor=True``, the SH DC band is initialized from the
-    reference-frame RGB at each query UV and the head predicts only a residual on
-    top of that anchor (zero-init on the SH output channels).
-
     When ``use_rgb_feature_residual=True``, RGB features sampled at the same query
     UVs are added to ``single_feats`` before Gaussian attributes are predicted.
+
+    ``direct_prediction=True`` follows AnySplat's Gaussian-attribute path: the
+    reference ``warp3d`` points are used directly as Gaussian means, while
+    opacity, scale, rotation, and SH are predicted directly from features.  No
+    Gaussian initializer, RGB-to-SH anchor, or attribute residual is used.
     """
 
     def __init__(
@@ -58,6 +59,9 @@ class SparsePairDynamicGaussianHead(nn.Module):
         use_rgb_color_anchor: bool = False,
         use_rgb_feature_residual: bool = False,
         rgb_feature_dim: int = 128,
+        direct_prediction: bool = False,
+        direct_scale_factor: float = 1e-3,
+        direct_scale_max: float = 0.3,
         use_sharp_zero_init: bool = False,
         min_scale_rate: float = 0.0,
         max_scale_rate: float = 10.0,
@@ -77,17 +81,38 @@ class SparsePairDynamicGaussianHead(nn.Module):
         self.predict_attribute_delta = predict_attribute_delta
         self.use_rgb_color_anchor = use_rgb_color_anchor
         self.use_rgb_feature_residual = use_rgb_feature_residual
+        self.direct_prediction = direct_prediction
+        self.direct_scale_factor = direct_scale_factor
+        self.direct_scale_max = direct_scale_max
         self.use_sharp_zero_init = use_sharp_zero_init
 
+        if direct_prediction and use_sharp_zero_init:
+            raise ValueError("direct_prediction and use_sharp_zero_init are mutually exclusive")
+        if direct_prediction and use_rgb_color_anchor:
+            raise ValueError("direct_prediction does not support an RGB-to-SH color anchor")
+        if direct_scale_factor <= 0:
+            raise ValueError("direct_scale_factor must be positive")
+        if direct_scale_max <= 0:
+            raise ValueError("direct_scale_max must be positive")
+
         if self.use_rgb_feature_residual:
-            self.rgb_feature_encoder = nn.Sequential(
-                nn.Conv2d(3, rgb_feature_dim, kernel_size=7, stride=1, padding=3),
-                nn.ReLU(inplace=True),
-                nn.Conv2d(rgb_feature_dim, in_dim, kernel_size=1, stride=1, padding=0),
-            )
-            # Keep the new branch identity-like until it learns a useful residual.
-            nn.init.zeros_(self.rgb_feature_encoder[-1].weight)
-            nn.init.zeros_(self.rgb_feature_encoder[-1].bias)
+            if direct_prediction:
+                # Match AnySplat's input_merger: one 7x7 RGB projection followed
+                # by ReLU, added to the decoded Gaussian feature map.
+                self.rgb_feature_encoder = nn.Sequential(
+                    nn.Conv2d(3, in_dim, kernel_size=7, stride=1, padding=3),
+                    nn.ReLU(inplace=True),
+                )
+            else:
+                self.rgb_feature_encoder = nn.Sequential(
+                    nn.Conv2d(3, rgb_feature_dim, kernel_size=7, stride=1, padding=3),
+                    nn.ReLU(inplace=True),
+                    nn.Conv2d(rgb_feature_dim, in_dim, kernel_size=1, stride=1, padding=0),
+                )
+                # Preserve the legacy identity-like initialization outside the
+                # AnySplat-style direct-prediction path.
+                nn.init.zeros_(self.rgb_feature_encoder[-1].weight)
+                nn.init.zeros_(self.rgb_feature_encoder[-1].bias)
         else:
             self.rgb_feature_encoder = None
 
@@ -132,7 +157,7 @@ class SparsePairDynamicGaussianHead(nn.Module):
             nn.init.zeros_(self.attr_mlp[-3].bias)
             nn.init.zeros_(self.attr_mlp[-1].weight)
             nn.init.zeros_(self.attr_mlp[-1].bias)
-        else:
+        elif not direct_prediction:
             nn.init.normal_(self.attr_mlp[-1].weight, std=0.01)
             nn.init.constant_(self.attr_mlp[-1].bias, -2.0)
             if use_rgb_color_anchor and self._attr_sh_dim > 0:
@@ -172,6 +197,22 @@ class SparsePairDynamicGaussianHead(nn.Module):
             sh = sh.clone()
             sh[..., 0, :] = rgb_to_sh_dc(sh_anchor) + sh[..., 0, :]
         return opacity, scale, rotation, sh
+
+    def _activate_direct(
+        self,
+        raw: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Decode directly predicted attributes with AnySplat-style mappings."""
+        opacity = raw[..., :1].sigmoid()
+        scales = self.direct_scale_factor * F.softplus(raw[..., 1:4])
+        scales = scales.clamp(min=1e-6, max=self.direct_scale_max)
+        log_scale = scales.log()
+
+        rotation = F.normalize(raw[..., 4:8], dim=-1, eps=1e-8)
+        sh_raw = raw[..., self._attr_non_sh_dim:]
+        sh = sh_raw.reshape(*sh_raw.shape[:-1], 3, self.d_sh).permute(0, 1, 3, 2)
+        sh = sh * self.sh_mask.view(1, 1, -1, 1)
+        return opacity, log_scale, rotation, sh
 
     def _sample_rgb_feature_at_query_uv(
         self,
@@ -332,6 +373,17 @@ class SparsePairDynamicGaussianHead(nn.Module):
             )
             result = dict(
                 **decoded,
+                sparse_global_points=sparse_global_points,
+                sparse_scene_flow=displacements,
+                src_frame_idx=ref_frame,
+            )
+        elif self.direct_prediction:
+            opacity, scale, rotation, sh = self._activate_direct(raw)
+            result = dict(
+                gs_opacity=opacity,
+                gs_scale=scale,
+                gs_rotation=rotation,
+                gs_sh=sh,
                 sparse_global_points=sparse_global_points,
                 sparse_scene_flow=displacements,
                 src_frame_idx=ref_frame,
