@@ -48,6 +48,7 @@ class MVQueryDual4DGSV2(MVQueryDual4DGS):
         gaussian_query=None,
         edge_mask=None,
         intrinsics=None,
+        w2c=None,
         motion_query=None,
     ) -> dict:
         if self.sparse_gaussian_head is None or pair_idx is None:
@@ -71,6 +72,7 @@ class MVQueryDual4DGSV2(MVQueryDual4DGS):
             gaussian_query=gaussian_query,
             edge_mask=edge_mask,
             intrinsics=intrinsics,
+            w2c=w2c,
             return_geometry_only=True,
         )
         if not head_out:
@@ -277,6 +279,7 @@ class MVQueryDual4DGSV2(MVQueryDual4DGS):
                     gaussian_query=gaussian_query,
                     edge_mask=edge_mask,
                     intrinsics=intrinsics,
+                    w2c=w2c,
                     motion_query=motion_query,
                 )
                 if gs_results:

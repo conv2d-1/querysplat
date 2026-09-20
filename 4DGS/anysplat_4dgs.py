@@ -4,7 +4,11 @@ Encoder 504, ``gaussian_query_scale=2`` → DGS render ~1008.
 Init from the Q4RT MVQuery6 baseline (no Gaussian head) — see below.
 
 Gaussian-head changes:
-  * ``warp3d`` points are used directly as Gaussian means (no xyz residual).
+  * Reference Gaussian means are reconstructed by unprojecting identity-pair
+    ``pair_depth`` with the reference camera intrinsics/extrinsics
+    (``geometry_source='camera_depth'``); no xyz residual is predicted.
+  * ``warp3d_delta`` supplies per-frame Gaussian displacements after the
+    reference means are reconstructed.
   * Opacity, scale, rotation and SH are predicted directly from query features.
   * The additive RGB feature branch is retained without zero initialization.
   * RGB-to-SH anchoring and inference-time RGB SH bootstrapping are disabled.
@@ -226,6 +230,7 @@ model = dict(
         enable_dual_gaussian_query=True,
         gaussian_query_scale=2.0,
         gaussian_query_patch_size=14,
+        normalize_predicted_cameras_for_gaussians=True,
         freeze_modules=[
             'fuse_encoder',
         ],
@@ -372,6 +377,7 @@ model = dict(
             direct_scale_factor=0.001,
             direct_scale_max=0.3,
             use_sharp_zero_init=False,
+            geometry_source='camera_depth',
         ),
     ),
     intrinsics_name='intrinsics',

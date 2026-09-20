@@ -763,6 +763,7 @@ class MVQuery6(MVQuery4):
         rgb=None,
         gaussian_query=None,
         intrinsics=None,
+        w2c=None,
     ) -> dict:
         if self.sparse_gaussian_head is None or pair_idx is None:
             return {}
@@ -777,6 +778,13 @@ class MVQuery6(MVQuery4):
         )
 
         prepare_decoupled_warp3d_delta_inplace(pair_flat)
+        geometry_kwargs = {}
+        if (
+            getattr(self.sparse_gaussian_head, "geometry_source", "warp3d")
+            == "camera_depth"
+        ):
+            geometry_kwargs["w2c"] = w2c
+
         return self.sparse_gaussian_head(
             single_feats=query_feats,
             pair_outputs=pair_flat,
@@ -787,6 +795,7 @@ class MVQuery6(MVQuery4):
             rgb=rgb,
             gaussian_query=gaussian_query,
             intrinsics=intrinsics,
+            **geometry_kwargs,
         )
 
     def single_forward(self, rgb, patch_tokens, prompt_depth, query, query_rgb, meta_data):
@@ -1125,6 +1134,8 @@ class MVQuery6(MVQuery4):
                 meta_data=meta_data,
                 rgb=rgb,
                 gaussian_query=query,
+                intrinsics=intrinsics,
+                w2c=w2c,
             )
             if gs_results:
                 results.update(gs_results)
@@ -1139,4 +1150,3 @@ class MVQuery6(MVQuery4):
         results["query"] = query
 
         return results
-    

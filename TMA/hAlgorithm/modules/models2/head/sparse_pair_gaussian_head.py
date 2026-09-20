@@ -14,6 +14,7 @@ from hAlgorithm.modules.pipelines2.utils.sparse_pair_gaussian_utils import (
     build_frame_displacements,
     canonicalize_scene_flow,
     compute_query_motion_descriptor,
+    ensure_bnv_cameras,
     find_pair_index,
     gather_pair_tensor,
     num_query_points,
@@ -27,10 +28,12 @@ from hAlgorithm.modules.pipelines2.utils.sparse_pair_gaussian_utils import (
 class SparsePairDynamicGaussianHead(nn.Module):
     """Predict Gaussian attributes at sparse query points on the reference frame.
 
-    Geometry and motion are **not** re-predicted here; they come from existing pair
-    decoder outputs:
+    Geometry and motion come from existing pair decoder outputs.  The reference
+    Gaussian means can either use ``warp3d`` directly or be reconstructed by
+    unprojecting ``pair_depth`` with the reference camera:
 
-    * ``warp3d @ (ref, ref)``  → reference-camera positions (ref / src frame)
+    * ``warp3d @ (ref, ref)``  → reference-frame positions
+    * ``pair_depth + K + w2c`` → reference-frame positions
     * ``warp3d_delta @ (ref, t)`` → per-frame displacements in the same frame
 
     The head learns opacity / scale / rotation / SH, conditioned on
@@ -40,8 +43,7 @@ class SparsePairDynamicGaussianHead(nn.Module):
     When ``use_rgb_feature_residual=True``, RGB features sampled at the same query
     UVs are added to ``single_feats`` before Gaussian attributes are predicted.
 
-    ``direct_prediction=True`` follows AnySplat's Gaussian-attribute path: the
-    reference ``warp3d`` points are used directly as Gaussian means, while
+    ``direct_prediction=True`` follows AnySplat's Gaussian-attribute path:
     opacity, scale, rotation, and SH are predicted directly from features.  No
     Gaussian initializer, RGB-to-SH anchor, or attribute residual is used.
     """
@@ -63,6 +65,7 @@ class SparsePairDynamicGaussianHead(nn.Module):
         direct_scale_factor: float = 1e-3,
         direct_scale_max: float = 0.3,
         use_sharp_zero_init: bool = False,
+        geometry_source: str = "warp3d",
         min_scale_rate: float = 0.0,
         max_scale_rate: float = 10.0,
         init_opacity: float = 0.5,
@@ -85,7 +88,13 @@ class SparsePairDynamicGaussianHead(nn.Module):
         self.direct_scale_factor = direct_scale_factor
         self.direct_scale_max = direct_scale_max
         self.use_sharp_zero_init = use_sharp_zero_init
+        self.geometry_source = geometry_source
 
+        if geometry_source not in {"warp3d", "camera_depth"}:
+            raise ValueError(
+                "geometry_source must be 'warp3d' or 'camera_depth', "
+                f"got {geometry_source!r}"
+            )
         if direct_prediction and use_sharp_zero_init:
             raise ValueError("direct_prediction and use_sharp_zero_init are mutually exclusive")
         if direct_prediction and use_rgb_color_anchor:
@@ -257,6 +266,85 @@ class SparsePairDynamicGaussianHead(nn.Module):
         )
         return sampled.squeeze(-1).permute(0, 2, 1).contiguous()
 
+    @staticmethod
+    def _query_uv_for_ref(
+        gaussian_query,
+        ref_frame: int,
+        batch_size: int,
+        device: torch.device,
+    ) -> torch.Tensor:
+        if gaussian_query is None or not hasattr(gaussian_query, "uv"):
+            raise ValueError("camera_depth geometry requires gaussian_query.uv")
+        uv = gaussian_query.uv.to(device=device, dtype=torch.float32)
+        if uv.dim() == 2:
+            uv = uv.unsqueeze(0)
+        elif uv.dim() == 4:
+            uv = uv[:, ref_frame]
+        elif uv.dim() != 3:
+            raise ValueError(f"Unsupported gaussian query UV shape {tuple(uv.shape)}")
+        if uv.shape[0] == 1 and batch_size > 1:
+            uv = uv.expand(batch_size, -1, -1)
+        if uv.shape[0] != batch_size:
+            raise ValueError(
+                f"gaussian query batch mismatch: got {uv.shape[0]}, expected {batch_size}"
+            )
+        return uv
+
+    def _unproject_pair_depth(
+        self,
+        pair_outputs: dict,
+        pair_idx: list,
+        identity_idx: int,
+        batch_size: int,
+        num_views: int,
+        ref_frame: int,
+        gaussian_query,
+        intrinsics: torch.Tensor | None,
+        w2c: torch.Tensor | None,
+        meta_data: dict,
+    ) -> torch.Tensor:
+        if "pair_depth" not in pair_outputs:
+            raise ValueError("camera_depth geometry requires pair_outputs['pair_depth']")
+        if intrinsics is None or w2c is None:
+            raise ValueError("camera_depth geometry requires intrinsics and w2c")
+
+        depth = gather_pair_tensor(
+            pair_outputs["pair_depth"], pair_idx, batch_size, identity_idx,
+        )
+        if depth.dim() == 2:
+            depth = depth.unsqueeze(-1)
+        if depth.dim() != 3 or depth.shape[-1] != 1:
+            raise ValueError(f"Expected pair depth [B,Q,1], got {tuple(depth.shape)}")
+
+        uv = self._query_uv_for_ref(
+            gaussian_query, ref_frame, batch_size, depth.device,
+        )
+        q = min(depth.shape[1], uv.shape[1])
+        depth = depth[:, :q].float()
+        uv = uv[:, :q]
+
+        height = int(meta_data["input_height"][0])
+        width = int(meta_data["input_width"][0])
+        pixels = torch.stack(
+            [
+                uv[..., 0] * max(width - 1, 1) + 0.5,
+                uv[..., 1] * max(height - 1, 1) + 0.5,
+                torch.ones_like(uv[..., 0]),
+            ],
+            dim=-1,
+        )
+
+        intrinsics = ensure_bnv_cameras(intrinsics, num_views, (3, 3)).float()
+        w2c = ensure_bnv_cameras(w2c, num_views, (4, 4)).float()
+        k_ref = intrinsics[:, ref_frame]
+        w2c_ref = w2c[:, ref_frame]
+
+        rays = torch.linalg.solve(k_ref, pixels.transpose(1, 2)).transpose(1, 2)
+        points_cam = rays * depth
+        points_h = torch.cat([points_cam, torch.ones_like(depth)], dim=-1)
+        c2w_ref = torch.linalg.inv(w2c_ref)
+        return torch.bmm(points_h, c2w_ref.transpose(1, 2))[..., :3]
+
     def forward(
         self,
         single_feats: torch.Tensor,
@@ -268,6 +356,7 @@ class SparsePairDynamicGaussianHead(nn.Module):
         rgb: torch.Tensor | None = None,
         gaussian_query=None,
         intrinsics: torch.Tensor | None = None,
+        w2c: torch.Tensor | None = None,
     ) -> dict:
         if single_feats is None:
             return {}
@@ -289,9 +378,23 @@ class SparsePairDynamicGaussianHead(nn.Module):
 
         feats = gather_pair_tensor(single_feats, pair_idx, batch_size, identity_idx)
 
-        sparse_global_points = gather_pair_tensor(
-            pair_outputs["warp3d"], pair_idx, batch_size, identity_idx,
-        )
+        if self.geometry_source == "camera_depth":
+            sparse_global_points = self._unproject_pair_depth(
+                pair_outputs=pair_outputs,
+                pair_idx=pair_idx,
+                identity_idx=identity_idx,
+                batch_size=batch_size,
+                num_views=num_views,
+                ref_frame=ref_frame,
+                gaussian_query=gaussian_query,
+                intrinsics=intrinsics,
+                w2c=w2c,
+                meta_data=meta_data,
+            )
+        else:
+            sparse_global_points = gather_pair_tensor(
+                pair_outputs["warp3d"], pair_idx, batch_size, identity_idx,
+            )
         warp3d_delta = pair_outputs.get("warp3d_delta")
         displacements = build_frame_displacements(
             warp3d=pair_outputs["warp3d"],

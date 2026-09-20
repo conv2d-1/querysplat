@@ -37,12 +37,16 @@ class MVQueryDual4DGS(MVQuery6):
         enable_dual_gaussian_query: bool = True,
         gaussian_query_scale: float = 1.0,
         gaussian_query_patch_size: int = 14,
+        normalize_predicted_cameras_for_gaussians: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.enable_dual_gaussian_query = enable_dual_gaussian_query
         self.gaussian_query_scale = float(gaussian_query_scale)
         self.gaussian_query_patch_size = int(gaussian_query_patch_size)
+        self.normalize_predicted_cameras_for_gaussians = bool(
+            normalize_predicted_cameras_for_gaussians
+        )
 
     @staticmethod
     def build_full_uv_query(
@@ -90,26 +94,32 @@ class MVQueryDual4DGS(MVQuery6):
             patch_size=self.gaussian_query_patch_size,
         )
 
-    def _resolve_gaussian_head_intrinsics(
+    def _resolve_gaussian_head_cameras(
         self,
         intrinsics: torch.Tensor | None,
+        w2c: torch.Tensor | None,
         results: dict,
         rgb: torch.Tensor,
-    ) -> torch.Tensor | None:
-        """Wild infer has no GT K; sharp-zero-init head needs predicted intrinsics."""
-        if intrinsics is not None:
-            return intrinsics
+    ) -> tuple[torch.Tensor | None, torch.Tensor | None]:
+        """Use provided cameras, falling back to CameraHead predictions."""
+        if intrinsics is not None and w2c is not None:
+            return intrinsics, w2c
         pose_enc = results.get("pose_enc")
         if pose_enc is None:
-            return None
+            return intrinsics, w2c
         if isinstance(pose_enc, (list, tuple)):
             pose_enc = pose_enc[-1]
-        _, head_intrinsics = pose_encoding_to_extri_intri(
+        pred_w2c, pred_intrinsics = pose_encoding_to_extri_intri(
             pose_encoding=pose_enc.float(),
             image_size_hw=rgb.shape[-2:],
             build_intrinsics=True,
         )
-        return head_intrinsics
+        if self.normalize_predicted_cameras_for_gaussians:
+            pred_w2c = pred_w2c @ torch.linalg.inv(pred_w2c[:, 0:1])
+        return (
+            intrinsics if intrinsics is not None else pred_intrinsics,
+            w2c if w2c is not None else pred_w2c,
+        )
 
     def _pair_forward_chunked(
         self,
@@ -290,6 +300,9 @@ class MVQueryDual4DGS(MVQuery6):
                 gs_pair = self._pair_forward_chunked(
                     rgb, pair_idx, patch_tokens, time_token, gaussian_query, query_rgb, meta_data,
                 )
+                head_intrinsics, head_w2c = self._resolve_gaussian_head_cameras(
+                    intrinsics, w2c, results, rgb,
+                )
                 gs_results = self._run_sparse_gaussian_head(
                     pair_flat=gs_pair,
                     pair_idx=pair_idx,
@@ -298,9 +311,8 @@ class MVQueryDual4DGS(MVQuery6):
                     meta_data=meta_data,
                     rgb=rgb,
                     gaussian_query=gaussian_query,
-                    intrinsics=self._resolve_gaussian_head_intrinsics(
-                        intrinsics, results, rgb,
-                    ),
+                    intrinsics=head_intrinsics,
+                    w2c=head_w2c,
                 )
                 if gs_results:
                     results.update(gs_results)
